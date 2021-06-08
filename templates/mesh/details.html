@@ -1,0 +1,33 @@
+{% extends 'admin/model/details.html' %}
+{% block head %}
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link rel="stylesheet" href="{{ url_for('static', filename='unityTemplateData/style.css') }}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='unityTemplateData/favicon.ico') }}">
+{% endblock %}
+{% block body %}
+    <input type="hidden" id="mesh_id" value="{{model.id}}" />
+    <div id="unity-container" class="unity-desktop">
+        <canvas id="unity-canvas" width=960 height=600></canvas>
+        <div id="unity-loading-bar">
+            <div id="unity-logo"></div>
+            <div id="unity-progress-bar-empty">
+                <div id="unity-progress-bar-full"></div>
+            </div>
+        </div>
+        <div id="unity-mobile-warning">
+        WebGL builds are not supported on mobile devices.
+        </div>
+        <div id="unity-footer">
+            <div id="unity-webgl-logo"></div>
+            <div id="unity-fullscreen-button"></div>
+            <div id="unity-build-title">Mesh_Raider_WebGL</div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block tail %}
+    {{ super() }}
+    <script src="{{ url_for('static', filename='mesh_details.js') }}"></script>
+{% endblock %}
