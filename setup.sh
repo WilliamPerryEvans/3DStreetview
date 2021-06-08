@@ -64,7 +64,7 @@ fi
 
 
 
-echo adding the odm360 service to Systemd
+echo adding the 3DStreetview service to Systemd
 sudo cp streetview.service /etc/systemd/system/
 
 # ensuring credentials are set correctly
