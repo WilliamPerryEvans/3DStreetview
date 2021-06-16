@@ -4,11 +4,20 @@
 <div class="container">
     <div class="row">
         <div class="col-sm-10 col-sm-offset-1">
-            <h1>Dashboard</h1>
+            <h1>3D Streetview Dashboard</h1>
+            <p>3D Streetview is an operational dashboard to manage streetview jobs with 3D photography coverage, process to 3D meshes and point clouds, and establish and explore 3D Digital Twins.</p>
+            <img src="{{ url_for('static', filename='img/front.jpg') }}"  style="width:50%;" />
+
             <p>
-                Check the GitHub repository at <a href="https://github.com/localdevice/libre360" target="_blank">https://github.com/localdevice/libre360</a>
+                <i class="fa fa-question-circle-o"></i>
+                <a href="https://github.com/localdevices/3DStreetview/blob/main/README.md" target="_blank">https://github.com/localdevices/3DStreetview/blob/main/README.md</a><br>
+                <i class="fa fa-github"></i>
+                <a href="https://github.com/localdevices/3DStreetview" target="_blank">https://github.com/localdevices/3DStreetview</a>
             </p>
+
         </div>
     </div>
-</div>
-{% endblock body %}
+    <p>This program is free software: you can redistribute it and/or modify it under the terms of the <a href="https://www.gnu.org/licenses/gpl-3.0.en.html" target="_blank">GNU
+                General Public License </a> as published by the Free Software Foundation, version 3. </p>
+    <p>&copy <a href="https://www.rainbowsensing.com/" target="_blank">Rainbow Sensing</a></p>
+    <p><br>The development of 3DStreetView is funded through "OpenSkies", a Botnar grant</p>{% endblock body %}
