@@ -19,7 +19,7 @@ class UserModelView(ModelView):
     can_view_details = True
 
     def is_accessible(self):
-        return current_user.is_active and current_user.is_authenticated
+        return (current_user.is_active and current_user.is_authenticated) or (current_user.is_anonymous)
 
     def _handle_view(self, name):
         if not self.is_accessible():
@@ -32,7 +32,7 @@ class UserView(admin.BaseView):
         return True
 
     def is_accessible(self):
-        return current_user.is_active and current_user.is_authenticated
+        return (current_user.is_active and current_user.is_authenticated) or (current_user.is_anonymous)
 
     def _handle_view(self, name):
         if not self.is_accessible():
