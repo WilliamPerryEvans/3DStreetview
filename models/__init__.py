@@ -1,6 +1,3 @@
-import socket
-from datetime import datetime
-import pytz
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session
 from sqlalchemy.orm import sessionmaker
@@ -9,10 +6,15 @@ from models.base import Base
 engine = create_engine("postgresql://streetview:zanzibar@localhost:5432/streetview", pool_size=50, pool_recycle=3600, pool_pre_ping=0, max_overflow=0)
 
 from models import user
+from models import project
+from models import odkconfig
+from models import odmconfig
+from models import site
+from models import odkattachment
+from models import odmproject
 from models import mesh
-
 # TODO: Persistent database by removing drop all once DB models are stable..
-# Base.metadata.drop_all(engine)
+Base.metadata.drop_all(engine)
 
 Base.metadata.create_all(engine)
 DBSession = sessionmaker(bind=engine)

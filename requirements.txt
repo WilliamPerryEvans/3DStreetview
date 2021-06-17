@@ -8,3 +8,4 @@ SQLAlchemy-serializer
 jsonschema
 email_validator
 bcrypt
+pyodm

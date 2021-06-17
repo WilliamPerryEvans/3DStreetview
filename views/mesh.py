@@ -33,31 +33,26 @@ class MeshView(UserModelView):
     can_edit = False
     column_list = (
         Mesh.id,
+        "project",
         Mesh.name,
-        Mesh.file_name,
-        Mesh.centroid_x,
-        Mesh.centroid_y,
+        Mesh.zipfile,
+        "odmproject",
         Mesh.status,
     )
 
     column_labels = {
         "name": "Mesh name",
-        "centroid_x": "Longitude [deg.]",
-        "centroid_y": "Latitude [deg.]",
-        "file_name": "Zip file"
+        "zipfile": "Zip file"
     }
     column_descriptions = {
-        "name": "Your name for the project",
-        "n_cams": "Amount of cameras available",
-        "dt": "Zip file containing mesh data",
     }
     form_columns = (
+        "project",
         Mesh.name,
-        Mesh.centroid_x,
-        Mesh.centroid_y,
-        "file_name",
+        "odmproject",
+        Mesh.zipfile,
     )
-    form_extra_fields = {"file_name": form.FileUploadField("Mesh zipfile", base_path="mesh", allowed_extensions=["zip"])}
+    form_extra_fields = {"zipfile": form.FileUploadField("Mesh zipfile", base_path="mesh", allowed_extensions=["zip"])}
     # if you want to edit project list, create, update, or detail view, specify adapted templates below.
     list_template = "mesh/list.html"
     create_template = "mesh/create.html"
