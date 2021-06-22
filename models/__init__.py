@@ -9,12 +9,11 @@ from models import user
 from models import project
 from models import odkconfig
 from models import odmconfig
-from models import site
 from models import odkattachment
 from models import odmproject
 from models import mesh
 # TODO: Persistent database by removing drop all once DB models are stable..
-Base.metadata.drop_all(engine)
+# Base.metadata.drop_all(engine)
 
 Base.metadata.create_all(engine)
 DBSession = sessionmaker(bind=engine)

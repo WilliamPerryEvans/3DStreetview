@@ -6,6 +6,10 @@
     <link rel="shortcut icon" href="{{ url_for('static', filename='unityTemplateData/favicon.ico') }}">
 {% endblock %}
 {% block body %}
+    <div>
+        <p>W for forward, S for back, A for left, D for right. E to rise straight up in the air, and Q to sink back down again. Use the mouse to look around/turn. O to look up, L to look down, K to look/turn left, and ; (semicolon) to look/turn right.</p>
+    </div>
+
     <input type="hidden" id="mesh_id" value="{{model.id}}" />
     <div id="unity-container" class="unity-desktop">
         <canvas id="unity-canvas" width=960 height=600></canvas>

@@ -31,8 +31,10 @@ class Mesh(Base, SerializerMixin):
     __tablename__ = "mesh"
     id = Column(Integer, primary_key=True)
     project_id = Column(Integer, ForeignKey("project.id"), nullable=False)
-    odmproject_id =Column(Integer, ForeignKey("odmproject.id"))  # also nullable in case a user simply wants to upload a mesh
+    odmproject_id = Column(Integer, ForeignKey("odmproject.id"))  # also nullable in case a user simply wants to upload a mesh
     name = Column(String, nullable=False)
+    latitude = Column(Float, nullable=False)
+    longitude = Column(Float, nullable=False)
     zipfile = Column(String)  # if a .zip file containing a mesh is supplied, then this is unzipped immediately.
     status = Column(Enum(MeshStatus), default=MeshStatus.NEW)
     project = relationship("Project")
@@ -52,10 +54,12 @@ def receive_after_update(mapper, connection, target):
     """
     src_path = "mesh"
     trg_path = f"static/{src_path}/{target.id}"
-    zipfile = os.path.join(src_path, target.zipfile)
-    if not(os.path.isfile(zipfile)):
-        raise IOError(f"File {zipfile} does not exist")
-    unzipmesh(zipfile, trg_path=trg_path, mesh_name="unity")
-    # no processing needed, so set Mesh status to finished immediately
-    target.status = MeshStatus.FINISHED
+    if target.zipfile is not None:
+        zipfile = os.path.join(src_path, target.zipfile)
+        if not(os.path.isfile(zipfile)):
+            raise IOError(f"File {zipfile} does not exist")
+        unzipmesh(zipfile, trg_path=trg_path, mesh_name="unity")
+        # no processing needed, so set Mesh status to finished immediately
+        print("Set Mesh status to 'Finished'")
+        target.status = 3
 
