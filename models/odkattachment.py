@@ -1,4 +1,4 @@
-from sqlalchemy import Integer, ForeignKey, String, Column
+from sqlalchemy import Integer, ForeignKey, String, Column, Float
 from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.orm import relationship
 from models.base import Base
@@ -13,6 +13,8 @@ class odkattachment(Base, SerializerMixin):
     id = Column(Integer, primary_key=True)
     odkconfig_id = Column(Integer, ForeignKey("odkconfig.id"), nullable=False)
     mesh_id = Column(Integer, ForeignKey("mesh.id"), nullable=False)
+    location_x = Column(Float, nullable=False)
+    location_y = Column(Float, nullable=False)
     odkprojectid = Column(String, nullable=False)
     odkformid = Column(String, nullable=False)  # TODO: figure out if we want to duplicate these in a table
     odkinstanceid = Column(Integer, nullable=False)  # TODO: figure out if we want to duplicate these in a table
