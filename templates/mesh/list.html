@@ -50,7 +50,7 @@
 
 
         {% for row in data %}
-            var marker = L.marker([{{ get_value(row, 'centroid_y') }}, {{ get_value(row, 'centroid_x') }}], {id:
+            var marker = L.marker([{{ get_value(row, 'latitude') }}, {{ get_value(row, 'longitude') }}], {id:
             {{ get_value(row, 'id') }} });
             toolTip = "<dl>" +
                 "<dt>ID: {{ get_value(row, 'id') }}</dt>" +

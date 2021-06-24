@@ -6,11 +6,13 @@ import re
 from models import db
 from models.user import User, Role
 from controllers import mesh_api
+from controllers import odk_api
 from views import admin
 
 # Create flask app
 app = Flask(__name__, template_folder="templates")
 app.register_blueprint(mesh_api)
+app.register_blueprint(odk_api)
 
 app.debug = True
 app.config["SECRET_KEY"] = "super-secret"
