@@ -9,4 +9,5 @@ jsonschema
 email_validator
 bcrypt
 pyodm
+requests
 git+https://github.com/localdevices/odk2odm.git
