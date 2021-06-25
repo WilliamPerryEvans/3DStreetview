@@ -17,27 +17,31 @@ def create_project(id, name):
     odmconfig = Odmconfig.query.get(id)
     # request token
     url = f"{odmconfig.host}:{odmconfig.port}/api/token-auth/"
-    res = requests.post(
-        url,
-        data={
-            "username": odmconfig.user,
-            "password": odmconfig.password
-        }
-    )
-    if res.status_code == 403:
-        current_app.logger.error(f"You do not have permissions to access {url}")
-        return
-    elif res.status_code != 200:
-        current_app.logger.error(f"{url} is not accessible or does not exist")
-        return
-    token = res.json()['token']
-    url = f"{odmconfig.host}:{odmconfig.port}/api/projects/"
-    res = requests.post(
-        url,
-        headers={'Authorization': 'JWT {}'.format(token)},
-        data={'name': name}
-    )
-    if res.status_code == 403:
-        current_app.logger.error(f"You do not have permissions to access {url}")
-        return
-    current_app.logger.info(f"Project {name} successfully added to ODM server {odmconfig}")
+    try:
+        res = requests.post(
+            url,
+            data={
+                "username": odmconfig.user,
+                "password": odmconfig.password
+            }
+        )
+        if res.status_code == 403:
+            current_app.logger.error(f"You do not have permissions to access {url}")
+            return res.json(), res.status_code
+        elif res.status_code != 200:
+            current_app.logger.error(f"{url} is not accessible or does not exist")
+            return res.json(), res.status_code
+        token = res.json()['token']
+        url = f"{odmconfig.host}:{odmconfig.port}/api/projects/"
+        res = requests.post(
+            url,
+            headers={'Authorization': 'JWT {}'.format(token)},
+            data={'name': name}
+        )
+        if res.status_code == 403:
+            current_app.logger.error(f"You do not have permissions to access {url}")
+            return res.json(), res.status_code
+        current_app.logger.info(f"Project {name} successfully added to ODM server {odmconfig}")
+        return jsonify(res.json())
+    except:
+        return f"Page {url} does not exist", 404
