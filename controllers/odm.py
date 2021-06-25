@@ -8,6 +8,11 @@ odm_api = Blueprint("odm_api", __name__)
 
 @odm_api.route("/api/odm/<id>/token-auth", methods=["GET"])
 def get_token(id):
+    """
+    Get a token for access to ODM server
+    :param id: odm configuration id
+    :return:
+    """
     # retrieve config from database
     odmconfig = Odmconfig.query.get(id)
     # request token
@@ -34,8 +39,8 @@ def get_token(id):
 @odm_api.route("/api/odm/<id>/projects", methods=["GET"])
 def list_projects(id):
     """
-    API endpoint for getting list of devices and states of devices
-
+    API endpoint for getting list of ODM projects from odm config
+    :param id: odm configuration id
     :return:
     """
     # retrieve config from database
@@ -96,22 +101,8 @@ def create_project(id):
     # create data to pass to request
     content = request.get_json()
     # request token
-    url = f"{odmconfig.host}:{odmconfig.port}/api/token-auth/"
+    token = get_token(id)[0]
     try:
-        res = requests.post(
-            url,
-            data={
-                "username": odmconfig.user,
-                "password": odmconfig.password
-            }
-        )
-        if res.status_code == 403:
-            current_app.logger.error(f"You do not have permissions to access {url}")
-            return res.json(), res.status_code
-        elif res.status_code != 200:
-            current_app.logger.error(f"{url} is not accessible or does not exist")
-            return res.json(), res.status_code
-        token = res.json()['token']
         url = f"{odmconfig.host}:{odmconfig.port}/api/projects/"
         res = requests.post(
             url,
@@ -126,23 +117,60 @@ def create_project(id):
     except:
         return f"Page {url} does not exist", 404
 
-#
-#
-#
-# images = [
-#     ('images', ('image1.jpg', open('image1.jpg', 'rb'), 'image/jpg')),
-#     ('images', ('image2.jpg', open('image2.jpg', 'rb'), 'image/jpg')),
-#     # ...
-# ]
-# options = json.dumps([
-#     {'name': "orthophoto-resolution", 'value': 24}
-# ])
-#
-# res = requests.post('http://localhost:8000/api/projects/{}/tasks/'.format(project_id),
-#             headers={'Authorization': 'JWT {}'.format(token)},
-#             files=images,
-#             data={
-#                 'options': options
-#             }).json()
-#
-# task_id = res['id']
+@odm_api.route("/api/odm/<id>/projects/<project_id>/tasks/", methods=["POST"])
+def create_task(id, project_id):
+    def gen(fn, size=65536):
+        with open(fn, "rb") as f:
+            yield f.read(size)
+    # retrieve config from database
+    from requests_file import FileAdapter
+    s = requests.Session()
+    s.mount('file://', FileAdapter())
+    odmconfig = Odmconfig.query.get(id)
+    # create data to pass to request
+    content = request.get_json()
+    # request token
+    token = get_token(id)[0]
+    # TODO: get_json with all image information
+    folder = "/home/hcwinsemius/tmp/photos"
+    import glob, os
+    imgs = glob.glob(os.path.join(folder, "*.JPG"))
+    # setup all gens
+    # gens = [gen(img) for img in imgs]
+    offset = 0
+    index = 0
+    headers = {'Authorization': 'JWT {}'.format(token)}
+    images = [
+        ('images', (os.path.split(img)[-1], None, 'image/jpg')) for img in imgs
+    ]
+    for n, img in enumerate(imgs):
+        c = s.get("file://" + img, stream=True).content
+        images[n] = ('images', (os.path.split(img)[-1], c, 'image/jpg'))
+        if n > 0:
+            images[0] = ('images', (os.path.split(img)[-1], None, 'image/jpg'))
+        offset = index + len(c)
+        if n < len(imgs):
+            length = offset
+        else:
+            length = offset - 1
+        headers["Content-Range"] = f'bytes {index}-{offset-1}/{length}'
+
+        options = json.dumps([
+            {'name': "orthophoto-resolution", 'value': 24}
+        ])
+        url = f"{odmconfig.host}:{odmconfig.port}/api/projects/{project_id}/tasks/"
+        res = requests.post(
+            url,
+            files=images,
+            headers=headers,
+            data={
+                'options': options
+            }
+        )
+        index = offset
+
+# except:
+#     return f"Page {url} does not exist", 404
+    return jsonify(res.json())
+
+    # task_id = res['id']
