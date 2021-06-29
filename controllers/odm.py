@@ -119,9 +119,7 @@ def create_project(id):
 
 @odm_api.route("/api/odm/<id>/projects/<project_id>/tasks/", methods=["POST"])
 def create_task(id, project_id):
-    def gen(fn, size=65536):
-        with open(fn, "rb") as f:
-            yield f.read(size)
+    # TODO: allow for passing of options from allowed list
     # retrieve config from database
     from requests_file import FileAdapter
     s = requests.Session()
@@ -135,39 +133,56 @@ def create_task(id, project_id):
     folder = "/home/hcwinsemius/tmp/photos"
     import glob, os
     imgs = glob.glob(os.path.join(folder, "*.JPG"))
-    # setup all gens
-    # gens = [gen(img) for img in imgs]
-    offset = 0
     index = 0
     headers = {'Authorization': 'JWT {}'.format(token)}
+    options = json.dumps([
+        {'name': "orthophoto-resolution", 'value': 24}
+    ])
+
     images = [
         ('images', (os.path.split(img)[-1], None, 'image/jpg')) for img in imgs
     ]
+    # make a new task
+    url = f"{odmconfig.host}:{odmconfig.port}/api/projects/{project_id}/tasks/"
+    res = requests.post(
+        url,
+        headers=headers,
+        data={
+            'options': options,
+            'partial': True,
+        },
+    )
+    task_id = res.json()["id"]
+    print(task_id)
     for n, img in enumerate(imgs):
         c = s.get("file://" + img, stream=True).content
-        images[n] = ('images', (os.path.split(img)[-1], c, 'image/jpg'))
-        if n > 0:
-            images[0] = ('images', (os.path.split(img)[-1], None, 'image/jpg'))
-        offset = index + len(c)
-        if n < len(imgs):
-            length = offset
-        else:
-            length = offset - 1
-        headers["Content-Range"] = f'bytes {index}-{offset-1}/{length}'
-
-        options = json.dumps([
-            {'name': "orthophoto-resolution", 'value': 24}
-        ])
-        url = f"{odmconfig.host}:{odmconfig.port}/api/projects/{project_id}/tasks/"
+        images = [('images', (os.path.split(img)[-1], c, 'image/jpg'))]
+        # images[n] = ('images', (os.path.split(img)[-1], c, 'image/jpg'))
+        # if n > 0:
+        #     images[n-1] = ('images', (images[n-1][1], None, 'image/jpg'))
+        # offset = index + len(c)
+        # if n < len(imgs)-1:
+        #     length = offset
+        #     partial = True
+        # else:
+        #     length = offset - 1
+        #     partial = False
+        # headers["Content-Range"] = f'bytes {index}-{offset-1}/{length}'
+        #
+        # index = offset
+        url = f"{odmconfig.host}:{odmconfig.port}/api/projects/{project_id}/tasks/{task_id}"
+        print(url)
         res = requests.post(
             url,
-            files=images,
             headers=headers,
-            data={
-                'options': options
-            }
+            data = {
+                'upload': images
+            #     'images': images,
+            #     'name': "HEllo World",
+            #     'partial': True
+            },
+            # files=images
         )
-        index = offset
 
 # except:
 #     return f"Page {url} does not exist", 404
