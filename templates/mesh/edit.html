@@ -1,0 +1,14 @@
+{% extends 'admin/model/edit.html' %}
+{% block edit_form %}
+    {{ super() }}
+    <div class="form-group ">
+    <label for="odkconfig" class="control-label" >ODK configuration
+          <strong style="color: red">&#42;</strong>
+    </label>
+        <select class="form-control" data-role="select2" id="odkconfig" name="odkcondig" required>
+        {% for config in odkconfig %}
+            <option value="{{ config.id }}">{{ config }}</option>
+        {% endfor %}
+        </select>
+  </div>
+{% endblock %}

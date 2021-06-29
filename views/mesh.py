@@ -12,7 +12,7 @@ class MeshView(UserModelView):
     def render(self, template, **kwargs):
         # add a database query to available data in Jinja template in the edit page
         # example modified from https://stackoverflow.com/questions/65892714/pass-other-object-data-into-flask-admin-model-view-edit-template
-        if template == 'project/edit.html':
+        if template == 'mesh/edit.html':
             # Get the model, this is just the first few lines of edit_view method
             return_url = get_redirect_target() or self.get_url('.index_view')
             if not self.can_edit:
@@ -64,5 +64,5 @@ class MeshView(UserModelView):
     # if you want to edit project list, create, update, or detail view, specify adapted templates below.
     list_template = "mesh/list.html"
     create_template = "mesh/create.html"
-    edit_template = "project/edit.html"
+    edit_template = "mesh/edit.html"
     details_template = "mesh/details.html"
