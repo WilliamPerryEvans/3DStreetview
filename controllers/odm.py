@@ -66,7 +66,7 @@ def list_projects(id):
 @odm_api.route("/api/odm/<id>/projects/<project_id>", methods=["GET"])
 def project(id, project_id):
     """
-    API endpoint for getting list of devices and states of devices
+    API endpoint for getting details of project
 
     :return:
     """
@@ -135,6 +135,7 @@ def create_task(id, project_id):
     imgs = glob.glob(os.path.join(folder, "*.JPG"))
     index = 0
     headers = {'Authorization': 'JWT {}'.format(token)}
+
     options = json.dumps([
         {'name': "orthophoto-resolution", 'value': 24}
     ])
@@ -150,10 +151,14 @@ def create_task(id, project_id):
         data={
             'options': options,
             'partial': True,
+            'name': "Hello ODM"
         },
+        # files=images,
     )
     task_id = res.json()["id"]
     print(task_id)
+    headers["Content-type"] = 'multipart/form-data; boundary="XXXXX"'  #
+
     for n, img in enumerate(imgs):
         c = s.get("file://" + img, stream=True).content
         images = [('images', (os.path.split(img)[-1], c, 'image/jpg'))]
@@ -170,19 +175,19 @@ def create_task(id, project_id):
         # headers["Content-Range"] = f'bytes {index}-{offset-1}/{length}'
         #
         # index = offset
-        url = f"{odmconfig.host}:{odmconfig.port}/api/projects/{project_id}/tasks/{task_id}"
+        url = f"{odmconfig.host}:{odmconfig.port}/api/projects/{project_id}/tasks/{task_id}/upload/"
         print(url)
         res = requests.post(
             url,
             headers=headers,
-            data = {
-                'upload': images
-            #     'images': images,
-            #     'name': "HEllo World",
-            #     'partial': True
+            data={
+                images
+                # "partial": True,
+                # "files": images,
             },
             # files=images
         )
+        print(res.json())
 
 # except:
 #     return f"Page {url} does not exist", 404
