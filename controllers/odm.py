@@ -117,25 +117,69 @@ def create_project(id):
     except:
         return f"Page {url} does not exist", 404
 
+
+@odm_api.route("/api/odm/<id>/projects/<project_id>/tasks/<task_id>", methods=["GET"])
+def task(id, project_id, task_id):
+    """
+    API endpoint for getting details of task within project
+
+    :return:
+    """
+    # retrieve config from database
+    odmconfig = Odmconfig.query.get(id)
+    # request token
+    token = get_token(id)[0]
+    try:
+        url = f"{odmconfig.host}:{odmconfig.port}/api/projects/{project_id}/tasks/{task_id}/"
+        res = requests.get(
+            url,
+            headers={'Authorization': 'JWT {}'.format(token)},
+        )
+        if res.status_code == 403:
+            current_app.logger.error(f"You do not have permissions to access {url}")
+            return res.json(), res.status_code
+        current_app.logger.info(f"Task details successfully retrieved from ODM server {odmconfig}")
+        return jsonify(res.json())
+    except:
+        return f"Page {url} does not exist", 404
+
+
+
 @odm_api.route("/api/odm/<id>/projects/<project_id>/tasks/", methods=["POST"])
 def create_task(id, project_id):
     # TODO: allow for passing of options from allowed list
+    # get the odm config
+    odmconfig = Odmconfig.query.get(id)
+    token = get_token(id)[0]
+    # retrieve requested data
+    data = request.get_json()
+    # make a new task, pass on data
+    url = f"{odmconfig.host}:{odmconfig.port}/api/projects/{project_id}/tasks/"
+    headers = {'Authorization': 'JWT {}'.format(token)}
+    res = requests.post(
+        url,
+        headers=headers,
+        data=data,
+    )
+    return jsonify(res.json())
+
+@odm_api.route("/api/odm/<id>/projects/<project_id>/tasks/<task_id>/upload/", methods=["POST"])
+def upload(id, project_id, task_id):
     # retrieve config from database
+    odmconfig = Odmconfig.query.get(id)
+    token = get_token(id)[0]
+    headers = {'Authorization': 'JWT {}'.format(token)}
     from requests_file import FileAdapter
     s = requests.Session()
     s.mount('file://', FileAdapter())
-    odmconfig = Odmconfig.query.get(id)
     # create data to pass to request
     content = request.get_json()
     # request token
-    token = get_token(id)[0]
     # TODO: get_json with all image information
     folder = "/home/hcwinsemius/tmp/photos"
     import glob, os
     imgs = glob.glob(os.path.join(folder, "*.JPG"))
     index = 0
-    headers = {'Authorization': 'JWT {}'.format(token)}
-
     options = json.dumps([
         {'name': "orthophoto-resolution", 'value': 24}
     ])
@@ -143,22 +187,7 @@ def create_task(id, project_id):
     images = [
         ('images', (os.path.split(img)[-1], None, 'image/jpg')) for img in imgs
     ]
-    # make a new task
-    url = f"{odmconfig.host}:{odmconfig.port}/api/projects/{project_id}/tasks/"
-    res = requests.post(
-        url,
-        headers=headers,
-        data={
-            'options': options,
-            'partial': True,
-            'name': "Hello ODM"
-        },
-        # files=images,
-    )
-    task_id = res.json()["id"]
-    print(task_id)
     headers["Content-type"] = 'multipart/form-data; boundary="XXXXX"'  #
-
     for n, img in enumerate(imgs):
         c = s.get("file://" + img, stream=True).content
         images = [('images', (os.path.split(img)[-1], c, 'image/jpg'))]
