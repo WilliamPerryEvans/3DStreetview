@@ -171,3 +171,11 @@ function get_odm_task()
 
 }
 
+function save_project() {
+    const id = $('input#mesh_id').val();
+    const odmconfig_id = $('#odm_config').val();
+    console.log(id);
+    console.log(odmconfig_id);
+    console.log(document.getElementById("odm_project_name").value);
+    console.log(document.getElementById("odm_project_desc").value);
+}
