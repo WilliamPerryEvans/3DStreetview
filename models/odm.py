@@ -4,6 +4,7 @@ from sqlalchemy import Integer, ForeignKey, String, Column, Enum, Float, event
 from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.orm import relationship
 from models.base import Base
+from odk2odm import odm_req
 
 class Odm(Base, SerializerMixin):
     """
@@ -31,3 +32,12 @@ class Odm(Base, SerializerMixin):
         :return: url (str)
         """
         return f"{self.host}:{self.port}"
+
+    @property
+    def token(self):
+        """
+        get a token from server config
+        :return:
+        """
+        res = odm_req.token_auth(self.url, self.user, self.password)
+        return res.json()['token']
