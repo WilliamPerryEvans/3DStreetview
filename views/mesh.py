@@ -1,6 +1,6 @@
 from views.general import UserModelView
 from models.mesh import Mesh
-from models.odmconfig import Odmconfig
+from models.odm import Odm
 from flask_admin import form
 from flask_admin.babel import gettext
 from flask import redirect, request, flash
@@ -27,7 +27,7 @@ class MeshView(UserModelView):
             if model is None:
                 flash(gettext('Record does not exist.'), 'error')
                 return redirect(return_url)
-            odmconfigs = Odmconfig.query.all()  # .query.filter_by(email=model.email)
+            odmconfigs = Odm.query.all()  # .query.filter_by(email=model.email)
             kwargs['odm_configs'] = odmconfigs
         return super(MeshView, self).render(template, **kwargs)
 
@@ -35,7 +35,6 @@ class MeshView(UserModelView):
     column_list = (
         "config",
         Mesh.id,
-        "project",
         Mesh.latitude,
         Mesh.longitude,
         Mesh.name,
@@ -50,7 +49,6 @@ class MeshView(UserModelView):
     column_descriptions = {
     }
     form_columns = (
-        "project",
         Mesh.latitude,
         Mesh.longitude,
         Mesh.name,

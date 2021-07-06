@@ -1,16 +1,16 @@
 from views.general import UserModelView
-from models.odmconfig import Odmconfig
+from models.odm import Odm
 from wtforms import ValidationError
 
 class OdmconfigView(UserModelView):
     can_edit = False
     column_list = (
-        Odmconfig.id,
-        Odmconfig.name,
-        Odmconfig.host,
-        Odmconfig.port,
-        Odmconfig.user,
-        Odmconfig.password,
+        Odm.id,
+        Odm.name,
+        Odm.host,
+        Odm.port,
+        Odm.user,
+        Odm.password,
     )
 
     column_labels = {
@@ -18,11 +18,11 @@ class OdmconfigView(UserModelView):
     column_descriptions = {
     }
     form_columns = (
-        Odmconfig.name,
-        Odmconfig.host,
-        Odmconfig.port,
-        Odmconfig.user,
-        Odmconfig.password,
+        Odm.name,
+        Odm.host,
+        Odm.port,
+        Odm.user,
+        Odm.password,
     )
     # if you want to edit project list, create, update, or detail view, specify adapted templates below.
     list_template = "odmconfig/list.html"
