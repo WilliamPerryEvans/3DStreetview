@@ -2,7 +2,7 @@ import json
 from flask import Blueprint, jsonify, request, flash, url_for, redirect
 from models.mesh import Mesh
 from models.odk import Odk
-from odk2odm import odk_req
+from odk2odm import odk_api as odk_req
 from odk2odm import odm_req
 # API components that retrieve or download data from database for use on front end
 mesh_api = Blueprint("mesh_api", __name__)
