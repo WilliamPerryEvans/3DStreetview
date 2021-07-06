@@ -3,17 +3,17 @@ from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.orm import relationship
 from models.base import Base
 
-class Odmproject(Base, SerializerMixin):
+class Odkproject(Base, SerializerMixin):
     """
-    Association table, for associating an ODM project to a Mesh record. Currently assumed to be a
+    Association table, for associating an ODK project to a Mesh record. Currently assumed to be a
     one-to-one relationship.
-    The full table of projects available for association should be retrieved with the ODM API
+    The full table of projects available for association should be retrieved with the ODK API
     """
-    __tablename__ = "odmproject"
+    __tablename__ = "odkproject"
     id = Column(Integer, primary_key=True)
-    odm_id = Column(Integer, ForeignKey("odm.id"), nullable=False)
+    odk_id = Column(Integer, ForeignKey("odk.id"), nullable=False)
     name = Column(String, nullable=False)
-    odm = relationship("Odm")
+    odk = relationship("Odk")
 
     def __str__(self):
         return "{}".format(self.name)

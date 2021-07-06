@@ -5,15 +5,15 @@ from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.orm import relationship
 from models.base import Base
 
-class Odmconfig(Base, SerializerMixin):
+class Odk(Base, SerializerMixin):
     """
-    NodeODM API access configuration. Adapted from https://pyodm.readthedocs.io/en/latest/
+    ODK Central API access configuration.
     """
-    __tablename__ = "odmconfig"
+    __tablename__ = "odk"
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
     host = Column(String, nullable=False)
-    port = Column(Integer, nullable=False, default=8000)  #
+    port = Column(Integer, nullable=False, default=3000)  #
     user = Column(String, default=None)  # token string to allow login
     password = Column(String, default=None)  # token string to allow login
     timeout = Column(Integer, default=30)  # timeout in seconds
@@ -23,4 +23,13 @@ class Odmconfig(Base, SerializerMixin):
 
     def __repr__(self):
         return "{}: {}".format(self.id, self.__str__())
+
+    @property
+    def url(self):
+        """
+        get a base url from the server config record
+        :return: url (str)
+        """
+        return f"{self.host}:{self.port}"
+
 
