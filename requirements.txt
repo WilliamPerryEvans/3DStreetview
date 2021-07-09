@@ -8,5 +8,6 @@ SQLAlchemy-serializer
 jsonschema
 email_validator
 bcrypt
-pyodm
-git+https://github.com/localdevices/odk2odm.git
+requests
+requests_toolbelt
+# git+https://github.com/localdevices/odk2odm.git

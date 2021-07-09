@@ -14,6 +14,7 @@ class MeshStatus(enum.Enum):
     READY = 1  # mesh can be processed as several (minimum xxx) files are available to process
     PROCESSING = 2  # mesh is being processed on ODM server, callbacks on status being received
     FINISHED = 3  # mesh is finished and ready for display in meshraider
+    ERROR = 3  # mesh is finished and ready for display in meshraider
 
 class Mesh(Base, SerializerMixin):
     """
@@ -30,15 +31,17 @@ class Mesh(Base, SerializerMixin):
     """
     __tablename__ = "mesh"
     id = Column(Integer, primary_key=True)
-    project_id = Column(Integer, ForeignKey("project.id"), nullable=False)
+    # project_id = Column(Integer, ForeignKey("project.id"), nullable=False)
     odmproject_id = Column(Integer, ForeignKey("odmproject.id"))  # also nullable in case a user simply wants to upload a mesh
+    odkproject_id = Column(Integer, ForeignKey("odkproject.id"))  # also nullable in case a user simply wants to upload a mesh
     name = Column(String, nullable=False)
     latitude = Column(Float, nullable=False)
     longitude = Column(Float, nullable=False)
     zipfile = Column(String)  # if a .zip file containing a mesh is supplied, then this is unzipped immediately.
     status = Column(Enum(MeshStatus), default=MeshStatus.NEW)
-    project = relationship("Project")
+    # project = relationship("Project")
     odmproject = relationship("Odmproject")
+    odkproject = relationship("Odkproject")
 
     def __str__(self):
         return "{}".format(self.name)

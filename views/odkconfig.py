@@ -1,16 +1,16 @@
 from views.general import UserModelView
-from models.odkconfig import Odkconfig
+from models.odk import Odk
 from wtforms import ValidationError
 
 class OdkconfigView(UserModelView):
     can_edit = False
     column_list = (
-        Odkconfig.id,
-        Odkconfig.name,
-        Odkconfig.host,
-        Odkconfig.port,
-        Odkconfig.user,
-        Odkconfig.password,
+        Odk.id,
+        Odk.name,
+        Odk.host,
+        Odk.port,
+        Odk.user,
+        Odk.password,
     )
 
     column_labels = {
@@ -18,11 +18,11 @@ class OdkconfigView(UserModelView):
     column_descriptions = {
     }
     form_columns = (
-        Odkconfig.name,
-        Odkconfig.host,
-        Odkconfig.port,
-        Odkconfig.user,
-        Odkconfig.password,
+        Odk.name,
+        Odk.host,
+        Odk.port,
+        Odk.user,
+        Odk.password,
     )
     # if you want to edit project list, create, update, or detail view, specify adapted templates below.
     list_template = "odkconfig/list.html"

@@ -5,11 +5,11 @@ from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.orm import relationship
 from models.base import Base
 
-class Odkconfig(Base, SerializerMixin):
+class Odk(Base, SerializerMixin):
     """
-    NodeODM API access configuration. Adapted from https://pyodm.readthedocs.io/en/latest/
+    ODK Central API access configuration.
     """
-    __tablename__ = "odkconfig"
+    __tablename__ = "odk"
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
     host = Column(String, nullable=False)
@@ -23,4 +23,13 @@ class Odkconfig(Base, SerializerMixin):
 
     def __repr__(self):
         return "{}: {}".format(self.id, self.__str__())
+
+    @property
+    def url(self):
+        """
+        get a base url from the server config record
+        :return: url (str)
+        """
+        return f"{self.host}:{self.port}"
+
 

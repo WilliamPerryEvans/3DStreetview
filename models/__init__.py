@@ -6,11 +6,11 @@ from models.base import Base
 engine = create_engine("postgresql://streetview:zanzibar@localhost:5432/streetview", pool_size=50, pool_recycle=3600, pool_pre_ping=0, max_overflow=0)
 
 from models import user
-from models import project
-from models import odkconfig
-from models import odmconfig
-from models import odkattachment
+# from models import project
+from models import odk
+from models import odm
 from models import odmproject
+from models import odkproject
 from models import mesh
 # TODO: Persistent database by removing drop all once DB models are stable..
 # Base.metadata.drop_all(engine)
