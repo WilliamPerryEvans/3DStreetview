@@ -1,0 +1,111 @@
+
+{% macro menu_icon(item) -%}
+  {% set icon_type = item.get_icon_type() %}
+  {%- if icon_type %}
+    {% set icon_value = item.get_icon_value() %}
+    {% if icon_type == 'glyph' %}
+      <i class="glyphicon {{ icon_value }}"></i>
+    {% elif icon_type == 'fa' %}
+      <i class="fa {{ icon_value }}"></i>
+    {% elif icon_type == 'fas' %}
+      <i class="fas {{ icon_value }}"></i>
+    {% elif icon_type == 'fab' %}
+      <i class="fab {{ icon_value }}"></i>
+    {% elif icon_type == 'image' %}
+      <img src="{{ url_for('static', filename=icon_value) }}" alt="menu image">
+    {% elif icon_type == 'image-url' %}
+      <img class="img-profile rounded-circle" src="{{ icon_value }}" alt="menu image">
+    {% endif %}
+  {% endif %}
+{%- endmacro %}
+
+{% macro menu(menu_root=None) %}
+  {% set is_main_nav = menu_root == None %}
+  {% if menu_root is none %}{% set menu_root = admin_view.admin.menu() %}{% endif %}
+  {%- for item in menu_root %}
+    {%- if item.is_category() -%}
+      {% set children = item.get_children() %}
+      {%- if children %}
+        {% set class_name = item.get_class_name() or '' %}
+          <li class="nav-item">
+              <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapse{{ item.name }}" aria-expanded="true" aria-controls="collapse{{ item.name }}">
+                {% if 'Servers' == item.name %}<i class="fas fa-fw fa-cog"></i>{% endif %}  <!--Hard coded cog wheel for servers-->
+                {{ menu_icon(item) }}<span>{{ item.name }}</span>
+              </a>
+            <div id="collapse{{ item.name }}" class="collapse" aria-labelledby="heading{{ item.name }}" data-parent="#accordionSidebar" style="">
+              <div class="bg-white py-2 collapse-inner rounded">
+                <h6 class="collapse-header">Options {{ item.name }}:</h6>
+                {%- for child in children -%}
+                  {%- if child.is_category() -%}
+                    {{ menu(menu_root=[child]) }}
+                  {% else %}
+                    {% set class_name = child.get_class_name() %}
+                    {%- if child.is_active(admin_view) %}
+                      <a class="collapse-item active" href="{{ child.get_url() }}"{% if child.target %}
+                         target="{{ child.target }}"{% endif %}>
+                        {{ menu_icon(child) }}{{ child.name }}</a>
+                    {% else %}
+                      <a class="collapse-item" href="{{ child.get_url() }}"{% if child.target %}
+                         target="{{ child.target }}"{% endif %}>
+                        {{ menu_icon(child) }}{{ child.name }}</a>
+                    {%- endif %}
+                {%- endif %}
+              {%- endfor %}
+              </div>
+            </div>
+          </li>
+      {% endif %}
+    {%- else %}
+      {%- if item.is_accessible() and item.is_visible() -%}
+        {% set class_name = item.get_class_name() %}
+        {%- if item.is_active(admin_view) %}
+          <li class="nav-item active">
+            {%- else %}
+          <li class="nav-item">
+        {%- endif %}
+      <a class="nav-link" href="{{ item.get_url() }}"{% if item.target %} target="{{ item.target }}"{% endif %}>
+        <span>{% if 'Home' == item.name %}<i class="fas fa-fw fa-tachometer-alt"></i>Dashboard{% else %}{{ menu_icon(item) }}{{ item.name }}{% endif %}</span></a>
+      </li>
+      {% if 'Home' == item.name %}
+        <hr class="sidebar-divider">
+        <!-- Heading -->
+        <div class="sidebar-heading">
+            Interface
+        </div>
+
+      {% endif %}
+      {%- endif -%}
+    {% endif -%}
+  {% endfor %}
+{% endmacro %}
+
+{% macro menu_links(links=None) %}
+  {% if links is none %}{% set links = admin_view.admin.menu_links() %}{% endif %}
+  {% for item in links %}
+    {% set class_name = item.get_class_name() %}
+    {% if item.is_accessible() and item.is_visible() %}
+      <li class="nav-item">
+<a class="nav-link" href="{{ item.get_url() }}"><span class="mr-2 d-none d-lg-inline text-gray-600 small">{% if 'Login' == item.name %}Guest{% else %}{{ item.name }}{% endif %}</span>{{ menu_icon(item) }}</a>
+      </li>
+    {% endif %}
+  {% endfor %}
+{% endmacro %}
+
+{% macro messages() %}
+  {% with messages = get_flashed_messages(with_categories=True) %}
+    {% if messages %}
+      {% for category, m in messages %}
+        {% if category %}
+          {# alert-error changed to alert-danger in bootstrap 3, mapping is for backwards compatibility #}
+          {% set mapping = {'message': 'info', 'error': 'danger'} %}
+          <div class="alert alert-{{ mapping.get(category, category) }} alert-dismissable">
+        {% else %}
+          <div class="alert alert-dismissable">
+        {% endif %}
+      <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+      {{ m }}
+      </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+{% endmacro %}
