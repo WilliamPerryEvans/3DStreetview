@@ -24,7 +24,8 @@ var flashMessage = function(data){
   for (i=0; i<data.length; i++) {
     html += '<div class="alert alert-' + data[i]['type'] + '"><a href="#" class="close" data-dismiss="alert">&times;</a>' + data[i].message + '</div>';
   }
-  return html;
+  document.getElementById("flash").innerHTML = html;
+//  return html;
 };
 
 function removeOptions(selectElement) {
