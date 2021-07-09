@@ -12,7 +12,7 @@ class Odmproject(Base, SerializerMixin):
     __tablename__ = "odmproject"
     id = Column(Integer, primary_key=True)
     odm_id = Column(Integer, ForeignKey("odm.id"), nullable=False)
-    name = Column(String, nullable=False)
+    remote_id = Column(Integer, nullable=False)
     odm = relationship("Odm")
 
     def __str__(self):
