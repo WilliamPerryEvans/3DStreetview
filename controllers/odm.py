@@ -55,7 +55,7 @@ def get_project(id, project_id):
 @odm_api.route("/api/odm/<id>/projects/", methods=["POST"])
 def post_project(id):
     """
-    API endpoint for getting list of devices and states of devices
+    API endpoint for posting a new project
 
     :return:
     """
