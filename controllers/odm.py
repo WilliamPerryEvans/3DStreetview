@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
 from models.odm import Odm
-from odk2odm import odm_req
+from odk2odm import odm_requests
 # API components that retrieve or download data from database for use on front end
 odm_api = Blueprint("odm_api", __name__)
 
@@ -14,7 +14,7 @@ def get_token(id):
     """
     odm = Odm.query.get(id)
     try:
-        res = odm_req.token_auth(odm.url, odm.user, odm.password)
+        res = odm_requests.token_auth(odm.url, odm.user, odm.password)
         return res.json()['token'], res.status_code
     except:
         return f"Retrieval from {odm.url} failed", 404
@@ -30,7 +30,7 @@ def get_projects(id):
     odm = Odm.query.get(id)
     # request token
     try:
-        res = odm_req.get_projects(odm.url, odm.token)
+        res = odm_requests.get_projects(odm.url, odm.token)
         return jsonify(res.json())
     except:
         return f"Retrieval from {odm.url} failed", 404
@@ -46,7 +46,7 @@ def get_project(id, project_id):
     # retrieve config from database
     odm = Odm.query.get(id)
     try:
-        res = odm_req.get_project(odm.url, odm.token, project_id)
+        res = odm_requests.get_project(odm.url, odm.token, project_id)
         return jsonify(res.json())
     except:
         return f"Page {odm.url} does not exist", 404
@@ -62,7 +62,7 @@ def post_project(id):
     # retrieve config from database
     odm = Odm.query.get(id)
     try:
-        res = odm_req.post_project(odm.url, odm.token, data=request.get_json())
+        res = odm_requests.post_project(odm.url, odm.token, data=request.get_json())
         return jsonify(res.json())
     except:
         return f"Page {odm.url} does not exist", 404
@@ -73,7 +73,7 @@ def get_task(id, project_id, task_id):
     # retrieve config from database
     odm = Odm.query.get(id)
     try:
-        res = odm_req.get_task(odm.url, odm.token, project_id, task_id)
+        res = odm_requests.get_task(odm.url, odm.token, project_id, task_id)
         # current_app.logger.info(res.json())
         return jsonify(res.json())
     except:
@@ -88,7 +88,7 @@ def post_task(id, project_id):
     odm = Odm.query.get(id)
     # request token
     try:
-        res = odm_req.post_task(odm.url, odm.token, project_id, data=request.get_json())
+        res = odm_requests.post_task(odm.url, odm.token, project_id, data=request.get_json())
         return jsonify(res.json())
     except:
         return f"Page {odm.url} does not exist", 404
@@ -104,7 +104,7 @@ def post_upload(id, project_id, task_id):
         file = request.files.get(k)
         fields[k] = (file.filename, file.stream.read(), file.content_type)
     try:
-        res = odm_req.post_upload(odm.url, odm.token, project_id, task_id, fields=fields)
+        res = odm_requests.post_upload(odm.url, odm.token, project_id, task_id, fields=fields)
         return jsonify(res.json())
     except:
         return f"Page {odm.url} does not exist", 404
@@ -115,7 +115,7 @@ def commit(id, project_id, task_id):
     # retrieve config from database
     odm = Odm.query.get(id)
     try:
-        res = odm_req.post_commit(odm.url, odm.token, project_id, task_id)
+        res = odm_requests.post_commit(odm.url, odm.token, project_id, task_id)
         return jsonify(res.json())
     except:
         return f"Page {odm.url} does not exist", 404
