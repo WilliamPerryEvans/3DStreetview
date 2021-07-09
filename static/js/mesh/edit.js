@@ -1,66 +1,14 @@
-$(document).ready(function () {
-    // simulate a click
-    document.getElementById("formButton").click();
-});
+//$(document).ready(function () {
+//    // simulate a click
+//    document.getElementById("formButton").click();
+//});
 
 // use bathymetry_edit.js as example for form capture and submit after other stuff
-function openTab(evt, tabName) {
-  // Declare all variables
-  var i, tabcontent, tablinks;
-
-  // Get all elements with class="tabcontent" and hide them
-  tabcontent = document.getElementsByClassName("tabcontent");
-  for (i = 0; i < tabcontent.length; i++) {
-    tabcontent[i].style.display = "none";
-  }
-
-  // Get all elements with class="tablinks" and remove the class "active"
-  tablinks = document.getElementsByClassName("tablinks");
-  for (i = 0; i < tablinks.length; i++) {
-    tablinks[i].className = tablinks[i].className.replace(" active", "");
-  }
-
-  // Show the current tab, and add an "active" class to the button that opened the tab
-  document.getElementById(tabName).style.display = "block";
-  evt.currentTarget.className += " active";
-}
-
-var flashMessage = function(data){
-  html = '';
-  for (i=0; i<data.length; i++) {
-    html += '<div class="alert alert-' + data[i]['type'] + '"><a href="#" class="close" data-dismiss="alert">&times;</a>' + data[i].message + '</div>';
-  }
-  return html;
-};
-
-function removeOptions(selectElement) {
-   var i, L = selectElement.options.length - 1;
-   for(i = L; i >= 0; i--) {
-      selectElement.remove(i);
-   }
-}
-
-function addDisabledOption(selectElement) {
-    var option = document.createElement("option");
-    option.text = " -- select an option -- ";
-//    option.value = x.id;
-    option.disabled = true;
-    option.selected = true;
-    selectElement.add(option);
-}
-
-function millisToMinutesAndSeconds(millis) {
-    var minutes = Math.floor(millis / 60000);
-    var seconds = ((millis % 60000) / 1000).toFixed(0);
-	//ES6 interpolated literals/template literals
-  	//If seconds is less than 10 put a zero in front.
-    return `${minutes}:${(seconds < 10 ? "0" : "")}${seconds}`;
-}
 
 function get_odm_projects()
 {
     // get current id of mesh
-    const id = $('input#mesh_id').val();
+//    const id = $('input#mesh_id').val();
     const odmconfig_id = $('#odm_config').val();
     document.getElementById("project_create_button").disabled = true;
     document.getElementById("project_delete_button").disabled = true;
@@ -179,3 +127,53 @@ function save_project() {
     console.log(document.getElementById("odm_project_name").value);
     console.log(document.getElementById("odm_project_desc").value);
 }
+
+$('form.admin-form').submit(function( event ) {
+    // Prevent submit.
+    event.preventDefault();
+    // register the currently chosen ODM project on our own database
+    content = {
+        "odm_id": parseInt(document.getElementById("odm_config").value),
+        "remote_id": parseInt(document.getElementById("odm_project").value)
+    }
+    console.log(content);
+
+    $.ajax({
+        type: 'POST',
+        url: `/api/odmproject/create_project`,
+        data: JSON.stringify(content),
+        contentType: "application/json",
+        dataType: 'json',
+        // Submit parent form on success.
+        success: function() {
+            console.log(data);
+//            form.submit();
+        },
+        // Enable save button again.
+        error: function() { $('button[type=submit], input[type=submit]').prop('disabled',false); }
+    });
+        // Prevent submit.
+
+    delete_groups = ["extra_config"]
+    delete_groups.forEach(e => $("#" + e).remove());
+    // Prevent double actions.
+//    $('button[type=submit], input[type=submit]').prop('disabled',true);
+    console.log("You have just clicked on --Save--")
+    const form = this;
+    document.getElementById("odmproject_id").value = 1;
+//    form.submit();
+    // remove the non-required form components
+//    delete_labels.forEach(e => form.removeChild(document.getElementById(e)));
+//    console.log(form);
+//    $.ajax({
+//        type: 'POST',
+//        url: `/api/mesh/${id}`,
+//        data: JSON.stringify({ "data": data }),
+//        contentType: "application/json",
+//        dataType: 'json',
+//        // Submit parent form on success.
+//        success: function() { form.submit(); },
+//        // Enable save button again.
+//        error: function() { $('button[type=submit], input[type=submit]').prop('disabled',false); }
+//    });
+});
