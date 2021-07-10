@@ -10,6 +10,7 @@ class Odmproject(Base, SerializerMixin):
     The full table of projects available for association should be retrieved with the ODM API
     """
     __tablename__ = "odmproject"
+    serialize_only = ('id', 'odm_id', 'remote_id')
     id = Column(Integer, primary_key=True)
     odm_id = Column(Integer, ForeignKey("odm.id"), nullable=False)
     remote_id = Column(Integer, nullable=False)

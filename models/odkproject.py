@@ -10,9 +10,10 @@ class Odkproject(Base, SerializerMixin):
     The full table of projects available for association should be retrieved with the ODK API
     """
     __tablename__ = "odkproject"
-    id = Column(Integer, primary_key=True)
-    odk_id = Column(Integer, ForeignKey("odk.id"), nullable=False)
-    name = Column(String, nullable=False)
+    serialize_only = ('id', 'odk_id', 'remote_id')
+    id = Column(Integer, primary_key=True)  # id of local ODK project reference
+    odk_id = Column(Integer, ForeignKey("odk.id"), nullable=False)  # id of odk server config
+    remote_id = Column(Integer, nullable=False)  # id as known on remote server
     odk = relationship("Odk")
 
     def __str__(self):
