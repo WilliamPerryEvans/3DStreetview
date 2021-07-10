@@ -36,13 +36,6 @@ class MeshView(UserModelView):
             kwargs["odk_configs"] = odkconfigs
         return super(MeshView, self).render(template, **kwargs)
 
-    # when a form is submitted, call this function to store the ODK and ODM projects first, and replace form items for ids of the resp projects
-    def on_model_change(self, form, model, is_created):
-        print("Hello")
-    #
-    # def create_model(self, form):
-
-
     can_edit = True
     column_list = (
         Mesh.id,
@@ -52,6 +45,7 @@ class MeshView(UserModelView):
         Mesh.zipfile,
         Mesh.status,
         "odmproject_id",
+        "odkproject_id",
     )
     column_labels = {
         "name": "Mesh name",
@@ -61,6 +55,7 @@ class MeshView(UserModelView):
     # }
     form_extra_fields = {
         "odmproject_id": HiddenField("odmproject_id"),
+        "odkproject_id": HiddenField("odkproject_id"),
         "zipfile": form.FileUploadField("Mesh zipfile", base_path="mesh", allowed_extensions=["zip"]),
     }
 
@@ -70,17 +65,8 @@ class MeshView(UserModelView):
         Mesh.name,
         "zipfile",
         "odmproject_id",
+        "odkproject_id",
     )
-    # form_overrides = {"odmproject" : StringField}
-    # form_excluded_columns = ("odm_config", "odm_project")
-    # form_create_rules = [
-    #     "latitude",
-    #     "longitude",
-    #     "name",
-    #     "zipfile",
-        # "odm_config",
-        # "odm_project",
-    # ]
 
     # if you want to edit project list, create, update, or detail view, specify adapted templates below.
     list_template = "mesh/list.html"

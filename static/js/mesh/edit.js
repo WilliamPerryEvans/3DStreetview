@@ -181,38 +181,96 @@ function save_odm_project() {
     });
 }
 
+function save_odk_project() {
+    const id = $('input#mesh_id').val();
+    const odkconfig_id = $('#odk_config').val();
+    console.log(id);
+    console.log(odkconfig_id);
+    name = document.getElementById("odk_project_name").value;
+    content = {
+        "name": name,
+    }
+    $.ajax({
+        type: 'POST',
+        url: `/api/odk/${odkconfig_id}/projects/`,
+        data: JSON.stringify(content),
+        contentType: "application/json",
+        dataType: 'json',
+        // Submit parent form on success.
+        success: function(data) {
+            console.log(data);
+            // refresh project list
+            get_odk_projects();
+            $('#newOdkProject').modal('hide');
+            flashMessage([{"type": "success", "message": "New ODK project created"}]);
+
+        },
+        // Enable save button again.
+        error: function() { flashMessage([{"type": "danger", "message": "Not able to create ODM project"}]) }
+    });
+}
+
+
 $('form.admin-form').submit(function( event ) {
     // Prevent submit.
+    // store form in separate constant
+    const form = this;
     event.preventDefault();
     // register the currently chosen ODM project on our own database
-    content = {
+    content_odm = {
         "odm_id": parseInt(document.getElementById("odm_config").value),
         "remote_id": parseInt(document.getElementById("odm_project").value)
+    }
+    content_odk = {
+        "odk_id": parseInt(document.getElementById("odk_config").value),
+        "remote_id": parseInt(document.getElementById("odk_project").value)
     }
     console.log(content);
 
     $.ajax({
         type: 'POST',
         url: `/api/odmproject/create_project`,
-        data: JSON.stringify(content),
+        data: JSON.stringify(content_odm),
         contentType: "application/json",
         dataType: 'json',
         // Submit parent form on success.
-        success: function() {
+        success: function(data) {
             console.log(data);
-//            form.submit();
+            // place the newly created local odm project ref in the hidden odmproject_id
+            document.getElementById("odmproject_id").value = data.id;
+            // if odm worked, then also make an odk project
+            $.ajax({
+                type: 'POST',
+                url: `/api/odkproject/create_project`,
+                data: JSON.stringify(content_odk),
+                contentType: "application/json",
+                dataType: 'json',
+                // Submit parent form on success.
+                success: function(data) {
+                    console.log(data);
+                    document.getElementById("odkproject_id").value = data.id;
+                    // both ODM and ODK projects are registered, now delete the parts in the form that are related to the odm and odk project selection
+                    delete_groups = ["extra_config"]
+                    delete_groups.forEach(e => $("#" + e).remove());
+                    form.submit();
+                },
+                error: function() {
+                    flashMessage([{"type": "danger", "message": "Not able to register ODK project locally"}])
+                    $('button[type=submit], input[type=submit]').prop('disabled',false);
+                }
+            });
         },
         // Enable save button again.
-        error: function() { $('button[type=submit], input[type=submit]').prop('disabled',false); }
+        error: function() {
+            flashMessage([{"type": "danger", "message": "Not able to register ODM project locally"}])
+            $('button[type=submit], input[type=submit]').prop('disabled',false);
+        }
     });
         // Prevent submit.
 
-    delete_groups = ["extra_config"]
-    delete_groups.forEach(e => $("#" + e).remove());
     // Prevent double actions.
 //    $('button[type=submit], input[type=submit]').prop('disabled',true);
-    console.log("You have just clicked on --Save--")
-    const form = this;
-    document.getElementById("odmproject_id").value = 1;
+//    console.log("You have just clicked on --Save--")
+//    const form = this;
 
 });
