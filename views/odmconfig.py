@@ -1,6 +1,6 @@
 from views.general import UserModelView
 from models.odm import Odm
-from wtforms import ValidationError
+from wtforms import ValidationError, PasswordField
 
 class OdmconfigView(UserModelView):
     can_edit = False
@@ -10,7 +10,6 @@ class OdmconfigView(UserModelView):
         Odm.host,
         Odm.port,
         Odm.user,
-        Odm.password,
     )
 
     column_labels = {
@@ -22,8 +21,11 @@ class OdmconfigView(UserModelView):
         Odm.host,
         Odm.port,
         Odm.user,
-        Odm.password,
+        "password",
     )
+    form_extra_fields = {
+        "password": PasswordField("password")
+    }
     # if you want to edit project list, create, update, or detail view, specify adapted templates below.
     list_template = "odmconfig/list.html"
     create_template = "odmconfig/create.html"

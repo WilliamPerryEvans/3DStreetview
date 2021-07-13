@@ -1,6 +1,6 @@
 from views.general import UserModelView
 from models.odk import Odk
-from wtforms import ValidationError
+from wtforms import ValidationError, PasswordField
 
 class OdkconfigView(UserModelView):
     can_edit = False
@@ -10,7 +10,6 @@ class OdkconfigView(UserModelView):
         Odk.host,
         Odk.port,
         Odk.user,
-        Odk.password,
     )
 
     column_labels = {
@@ -22,8 +21,12 @@ class OdkconfigView(UserModelView):
         Odk.host,
         Odk.port,
         Odk.user,
-        Odk.password,
+        "password",
     )
+
+    form_extra_fields = {
+        "password": PasswordField("password"),
+    }
     # if you want to edit project list, create, update, or detail view, specify adapted templates below.
     list_template = "odkconfig/list.html"
     create_template = "odkconfig/create.html"
