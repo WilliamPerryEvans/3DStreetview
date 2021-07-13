@@ -17,7 +17,7 @@ class Odmproject(Base, SerializerMixin):
     odm = relationship("Odm")
 
     def __str__(self):
-        return "{}".format(self.name)
+        return "{}".format(self.remote_id)
 
     def __repr__(self):
         return "{}: {}".format(self.id, self.__str__())

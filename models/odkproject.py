@@ -2,6 +2,7 @@ from sqlalchemy import Integer, ForeignKey, String, Column
 from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.orm import relationship
 from models.base import Base
+import requests
 
 class Odkproject(Base, SerializerMixin):
     """
@@ -16,8 +17,15 @@ class Odkproject(Base, SerializerMixin):
     remote_id = Column(Integer, nullable=False)  # id as known on remote server
     odk = relationship("Odk")
 
+    @property
+    def app_users(self):
+        url = f'{self.odk.url}/v1/projects/{self.remote_id}/app-users'
+        return requests.get(url, auth=(self.odk.user, self.odk.password)).json()
+
+
     def __str__(self):
-        return "{}".format(self.name)
+        return "{}".format(self.remote_id)
 
     def __repr__(self):
         return "{}: {}".format(self.id, self.__str__())
+
