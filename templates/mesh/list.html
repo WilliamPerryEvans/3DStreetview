@@ -8,11 +8,19 @@
     </head>
 {% endblock %}
 {% block body %}
-   {{ super() }}
-    <div class="container"><div id="map"></div></div>
+<div class="row">
+    <div class="col">
+        <div class="container">
+            <h2>Mesh configuration</h2><span>Lorem ipsum</span></div>
+    </div>
+    <div class="col">
+        <div class="container" style="height: 400px;width:inherit;"><div id="map" style="width:inherit;"></div></div>
+    </div>
+</div>
+{{ super() }}
 {% endblock %}
-{% block tail %}
 
+{% block tail %}
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
         integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
         crossorigin="">
@@ -63,7 +71,7 @@
                 var id = e.target.options.id
                 // construct a relative end point with filtered movies (flt1_0)
                 //location.href = "https://github.com/localdevices/libre360#libre360"
-                location.href = '/dashboard/mesh/details/?id=' + id
+                location.href = '/dashboard/mesh/details/?id=' + id + '&modal=True'
             });
             markers.addLayer(marker);
         {% endfor %}
