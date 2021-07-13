@@ -3,7 +3,9 @@
   {% set icon_type = item.get_icon_type() %}
   {%- if icon_type %}
     {% set icon_value = item.get_icon_value() %}
-    {% if icon_type == 'glyph' %}
+    {% if item.name == 'Login' %}
+      <img class="img-profile rounded-circle" src="/static/img/undraw_profile_{{ range(0, 4) | random }}.svg" alt="menu image">
+    {% elif icon_type == 'glyph' %}
       <i class="glyphicon {{ icon_value }}"></i>
     {% elif icon_type == 'fa' %}
       <i class="fa {{ icon_value }}"></i>
@@ -29,7 +31,9 @@
         {% set class_name = item.get_class_name() or '' %}
           <li class="nav-item">
               <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapse{{ item.name }}" aria-expanded="true" aria-controls="collapse{{ item.name }}">
-                {% if 'Servers' == item.name %}<i class="fas fa-fw fa-cog"></i>{% endif %}  <!--Hard coded cog wheel for servers-->
+                {% if 'Servers' == item.name %}<i class="fas fa-fw fa-cog"></i>  <!--Hard coded cog wheel for servers-->
+                {% elif 'Meshes' == item.name %}<i class="fab fa-unity"></i>
+                {% endif %}
                 {{ menu_icon(item) }}<span>{{ item.name }}</span>
               </a>
             <div id="collapse{{ item.name }}" class="collapse" aria-labelledby="heading{{ item.name }}" data-parent="#accordionSidebar" style="">
