@@ -16,26 +16,14 @@ class MeshView(UserModelView):
         # add a database query to available data in Jinja template in the edit page
         # example modified from https://stackoverflow.com/questions/65892714/pass-other-object-data-into-flask-admin-model-view-edit-template
         if template in ['mesh/edit.html', 'mesh/create.html']:
-            # # Get the model, this is just the first few lines of edit_view method
-            # return_url = get_redirect_target() or self.get_url('.index_view')
-            # if not self.can_edit:
-            #     return redirect(return_url)
-            #
-            # id = get_mdict_item_or_list(request.args, 'id')
-            # if id is None:
-            #     return redirect(return_url)
-            #
-            # model = self.get_one(id)
-            #
-            # if model is None:
-            #     flash(gettext('Record does not exist.'), 'error')
-            #     return redirect(return_url)
-            odmconfigs = Odm.query.all()  # .query.filter_by(email=model.email)
-            odkconfigs = Odk.query.all()  # .query.filter_by(email=model.email)
+            # add odm config and odk config to variables available in jinja template
+            odmconfigs = Odm.query.all()
+            odkconfigs = Odk.query.all()
             kwargs["odm_configs"] = odmconfigs
             kwargs["odk_configs"] = odkconfigs
         return super(MeshView, self).render(template, **kwargs)
 
+    details_modal = True
     can_edit = True
     column_list = (
         Mesh.id,
@@ -68,8 +56,9 @@ class MeshView(UserModelView):
         "odkproject_id",
     )
 
+    # column_display_actions =
+
     # if you want to edit project list, create, update, or detail view, specify adapted templates below.
     list_template = "mesh/list.html"
     create_template = "mesh/create.html"
-    edit_template = "mesh/edit.html"
-    details_template = "mesh/details.html"
+    details_modal_template = "mesh/details.html"
