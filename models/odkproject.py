@@ -2,7 +2,9 @@ from sqlalchemy import Integer, ForeignKey, String, Column
 from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.orm import relationship
 from models.base import Base
+from odk2odm import odk_requests
 import requests
+
 
 class Odkproject(Base, SerializerMixin):
     """
@@ -22,6 +24,9 @@ class Odkproject(Base, SerializerMixin):
         url = f'{self.odk.url}/v1/projects/{self.remote_id}/app-users'
         return requests.get(url, auth=(self.odk.user, self.odk.password)).json()
 
+    @property
+    def project(self):
+        return odk_requests.project(self.odk.url, aut=(self.odk.user, self.odk.password), projectId=self.remote_id).json()
 
     def __str__(self):
         return "{}".format(self.remote_id)

@@ -2,6 +2,7 @@ from sqlalchemy import Integer, ForeignKey, String, Column
 from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.orm import relationship
 from models.base import Base
+from odk2odm import odm_requests
 
 class Odmproject(Base, SerializerMixin):
     """
@@ -15,6 +16,12 @@ class Odmproject(Base, SerializerMixin):
     odm_id = Column(Integer, ForeignKey("odm.id"), nullable=False)
     remote_id = Column(Integer, nullable=False)
     odm = relationship("Odm")
+
+    @property
+    def project(self):
+        return odm_requests.get_project(self.odm.url, token=self.odm.token, project_id=self.remote_id).json()
+
+
 
     def __str__(self):
         return "{}".format(self.remote_id)
