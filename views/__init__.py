@@ -20,9 +20,7 @@ admin = admin.Admin(name="3D Streetview", template_mode="bootstrap4", url="/dash
 
 # Login/logout menu links.
 admin.add_link(LogoutMenuLink(name="Logout", category="", url="/logout"))
-no = random.randint(0, 3)
-print(no)
-admin.add_link(LoginMenuLink(name="Login", category="", url="/login", icon_type="image-url", icon_value=f"/static/img/undraw_profile_{no}.svg"))
+admin.add_link(LoginMenuLink(name="Login", category="", url="/login", icon_type="image-url", icon_value=f"/static/img/undraw_profile_0.svg"))
 
 # Publicly visible pages.
 admin.add_view(OdkconfigView(session=db, model=Odk, name="ODK configuration", url="odkconfig", category="Servers"))
