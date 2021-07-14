@@ -1,10 +1,4 @@
-//$(document).ready(function () {
-//    // simulate a click
-//    document.getElementById("formButton").click();
-//});
-
 // use bathymetry_edit.js as example for form capture and submit after other stuff
-
 function get_odk_projects()
 {
     // get current id of mesh
@@ -74,82 +68,6 @@ function get_odm_projects()
     });
 };
 
-function get_odm_tasks()
-{    // get current id of mesh
-    const id = $('input#mesh_id').val();
-    const odmconfig_id = $('#odm_config').val();
-    var project_select = document.getElementById("odm_project");
-    const odmproject_id = project_select.value;
-    document.getElementById("task_button").disabled = true;
-    document.getElementById("task_create_button").disabled = true;
-    document.getElementById("task_delete_button").disabled = true;
-    var task_select = document.getElementById("odm_task");
-    // clear current tasks in dropdown
-    removeOptions(task_select);
-    $.getJSON(
-        `/api/odm/${odmconfig_id}/projects/${odmproject_id}`,
-        function(data) {
-            // populate the project dropdown with results
-            console.log(data)
-            data.tasks.forEach(function(x) {
-                var option = document.createElement("option");
-                option.text = x;
-                option.value = x;
-                task_select.add(option);
-            });
-            flashMessage([{"type": "success", "message": "Retrieved tasks"}]);
-            document.getElementById("task_button").disabled = false;
-            document.getElementById("task_create_button").disabled = false;
-            document.getElementById("task_delete_button").disabled = false;
-
-
-        }
-    )
-    .fail(function() {
-        // flash a message in case everything fails
-        flashMessage([{"type": "danger", "message": "Not able to retrieve tasks"}]);
-    });
-};
-
-function get_odm_task()
-{
-    // get current id of mesh
-    const id = $('input#mesh_id').val();
-    const odmconfig_id = $('#odm_config').val();
-    var project_select = document.getElementById("odm_project");
-    const odmproject_id = project_select.value;
-    var task_select = document.getElementById("odm_task");
-    const task_id = task_select.value;
-    document.getElementById("task_button").disabled = true;
-    document.getElementById("task_create_button").disabled = true;
-    document.getElementById("task_delete_button").disabled = true;
-
-    console.log(task_id);
-    // clear current tasks in dropdown
-    $.getJSON(
-        `/api/odm/${odmconfig_id}/projects/${odmproject_id}/tasks/${task_id}`,
-        function(data) {
-                console.log(data);
-                // change content of status texts and bars
-                $('#task_id span').text(`Task: ${task_id}`);
-                $('#images_count span').text(` ${data.images_count}`);
-                $('#processing_time span').text(` ${millisToMinutesAndSeconds(data.processing_time)}`);
-                prog = document.getElementById('upload_progress')
-                prog.style = `width: ${data.upload_progress*100}%`
-                prog.textContent = `${Math.round(data.upload_progress*data.images_count)}/${data.images_count}`;
-                prog = document.getElementById('running_progress')
-                prog.style = `width: ${data.running_progress*100}%`
-                prog.textContent = `${Math.round(data.running_progress*100)} %`;
-            });
-            flashMessage([{"type": "success", "message": `Retrieved task ${task_id}`}]);
-            document.getElementById("task_button").disabled = false;
-            document.getElementById("task_create_button").disabled = false;
-            document.getElementById("task_delete_button").disabled = false;
-    // open the edit tab
-//    openTab(event, 'task_view')
-
-}
-
 function save_odm_project() {
     const id = $('input#mesh_id').val();
     const odmconfig_id = $('#odm_config').val();
@@ -199,11 +117,22 @@ function save_odk_project() {
         // Submit parent form on success.
         success: function(data) {
             console.log(data);
+
+            $.ajax({
+                type: 'POST',
+                url: `/api/odk/${odkconfig_id}/projects/${data.id}/app-users`,
+                data: JSON.stringify({"displayName": "Surveyor"}),
+                contentType: "application/json",
+                dataType: 'json',
+                // Submit parent form on success.
+                function(app_user) {
+                    console.log(app_user);
+                }
+            });
             // refresh project list
             get_odk_projects();
             $('#newOdkProject').modal('hide');
             flashMessage([{"type": "success", "message": "New ODK project created"}]);
-
         },
         // Enable save button again.
         error: function() { flashMessage([{"type": "danger", "message": "Not able to create ODM project"}]) }
