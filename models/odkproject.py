@@ -1,10 +1,16 @@
-from sqlalchemy import Integer, ForeignKey, String, Column
+from sqlalchemy import Integer, ForeignKey, String, Column, event
 from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.orm import relationship
+
 from models.base import Base
+from models.odk import Odk
 from odk2odm import odk_requests
+
+import os
 import requests
 
+# here, add any ODK forms that need to be added to a new ODK project when created within the UI
+odk_forms = ["static/forms/3DStreetView_main.xlsx", "static/forms/3DStreetView_fill.xlsx"]
 
 class Odkproject(Base, SerializerMixin):
     """
@@ -34,3 +40,26 @@ class Odkproject(Base, SerializerMixin):
     def __repr__(self):
         return "{}: {}".format(self.id, self.__str__())
 
+@event.listens_for(Odkproject, "after_insert")
+def receive_after_insert(mapper, connection, target):
+    """
+    Upload forms into the prepared Odkproject on the server
+
+    :param mapper:
+    :param connection:
+    :param target:
+    """
+    # odk relationship not yet available so query that from db
+    odk = Odk.query.get(target.odk_id)
+    base_url = odk.url
+    aut = (odk.user, odk.password)
+    projectId = target.remote_id
+    responses = []
+    for odk_form in odk_forms:
+        with open(odk_form, "rb") as f:
+            data = f.read()
+        name = os.path.split(odk_form)[-1].split(".")[0]
+        # TODO: finish
+        res = odk_requests.create_form(base_url, aut, projectId, name, data)
+        responses.append(res.json())
+    return responses, 200

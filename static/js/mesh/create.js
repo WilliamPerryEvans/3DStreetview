@@ -1,8 +1,7 @@
 // use bathymetry_edit.js as example for form capture and submit after other stuff
 function get_odk_projects()
 {
-    // get current id of mesh
-//    const id = $('input#mesh_id').val();
+    // get current id of odk server config
     const odkconfig_id = $('#odk_config').val();
     document.getElementById("odk_project_create").disabled = true;
     document.getElementById("odk_project_delete").disabled = true;
@@ -36,8 +35,7 @@ function get_odk_projects()
 
 function get_odm_projects()
 {
-    // get current id of mesh
-//    const id = $('input#mesh_id').val();
+    // get current id odm server config
     const odmconfig_id = $('#odm_config').val();
     document.getElementById("odm_project_create").disabled = true;
     document.getElementById("odm_project_delete").disabled = true;
@@ -105,6 +103,7 @@ function save_odk_project() {
     console.log(id);
     console.log(odkconfig_id);
     name = document.getElementById("odk_project_name").value;
+//    forms = [`/static/forms/3DStreetView_main.xlsx`, `/static/forms/3DStreetView_fill.xlsx`];
     content = {
         "name": name,
     }
@@ -129,16 +128,30 @@ function save_odk_project() {
                     console.log(app_user);
                 }
             });
-            // refresh project list
+            // add project to local database as reference
+            content = {
+                "odk_id": parseInt(odkconfig_id),
+                "remote_id": parseInt(data.id)
+            }
+            $.ajax({
+                type: 'POST',
+                url: `/api/odkproject/create_project`,
+                data: JSON.stringify(content),
+                contentType: "application/json",
+                dataType: 'json',
+                // Submit parent form on success.
+                function(odk_insert) {
+                    console.log(odk_insert);
+                }
+            });
+            // We're done, now refresh project list
             get_odk_projects();
             $('#newOdkProject').modal('hide');
             flashMessage([{"type": "success", "message": "New ODK project created"}]);
         },
-        // Enable save button again.
         error: function() { flashMessage([{"type": "danger", "message": "Not able to create ODM project"}]) }
     });
 }
-
 
 $('form.admin-form').submit(function( event ) {
     // Prevent submit.
@@ -195,11 +208,4 @@ $('form.admin-form').submit(function( event ) {
             $('button[type=submit], input[type=submit]').prop('disabled',false);
         }
     });
-        // Prevent submit.
-
-    // Prevent double actions.
-//    $('button[type=submit], input[type=submit]').prop('disabled',true);
-//    console.log("You have just clicked on --Save--")
-//    const form = this;
-
 });
