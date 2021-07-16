@@ -10,4 +10,4 @@ email_validator
 bcrypt
 requests
 requests_toolbelt
-# git+https://github.com/localdevices/odk2odm.git
+git+https://github.com/localdevices/odk2odm.git
