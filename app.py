@@ -9,6 +9,7 @@ from controllers import mesh_api
 from controllers import odk_api
 from controllers import odm_api
 from controllers import odmproject_api
+from controllers import odkproject_api
 from views import admin
 
 # Create flask app
@@ -17,7 +18,7 @@ app.register_blueprint(mesh_api)
 app.register_blueprint(odk_api)
 app.register_blueprint(odm_api)
 app.register_blueprint(odmproject_api)
-
+app.register_blueprint(odkproject_api)
 
 app.debug = True
 app.config["SECRET_KEY"] = "super-secret"

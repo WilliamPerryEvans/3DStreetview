@@ -1,37 +1,29 @@
-{% extends 'admin/model/details.html' %}
-{% block head %}
-    <meta charset="utf-8">
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <link rel="stylesheet" href="{{ url_for('static', filename='unityTemplateData/style.css') }}">
-    <link rel="shortcut icon" href="{{ url_for('static', filename='unityTemplateData/favicon.ico') }}">
-{% endblock %}
-{% block body %}
-    <div>
-        <p>W for forward, S for back, A for left, D for right. E to rise straight up in the air, and Q to sink back down again. Use the mouse to look around/turn. O to look up, L to look down, K to look/turn left, and ; (semicolon) to look/turn right.</p>
-    </div>
-
-    <input type="hidden" id="mesh_id" value="{{model.id}}" />
-    <div id="unity-container" class="unity-desktop">
-        <canvas id="unity-canvas" width=960 height=600></canvas>
-        <div id="unity-loading-bar">
-            <div id="unity-logo"></div>
-            <div id="unity-progress-bar-empty">
-                <div id="unity-progress-bar-full"></div>
-            </div>
-        </div>
-        <div id="unity-mobile-warning">
-        WebGL builds are not supported on mobile devices.
-        </div>
-        <div id="unity-footer">
-            <div id="unity-webgl-logo"></div>
-            <div id="unity-fullscreen-button"></div>
-            <div id="unity-build-title">Mesh_Raider_WebGL</div>
+{% extends 'admin/model/modals/details.html' %}
+{% block details_table %}
+    <div class="row">
+        <div class="col">
+            <span>Here you can find the QR code of the ODK project for this Mesh</span>
         </div>
     </div>
-
-{% endblock %}
-
-{% block tail %}
-    {{ super() }}
-    <script src="{{ url_for('static', filename='mesh_details.js') }}"></script>
+        <div class="row">
+        <div class="col">
+            {% if model.odkproject.app_users|length > 0 %}
+                <img src="/api/odk/{{ model.odkproject.odk.id }}/key/{{ model.odkproject.app_users[0]['token'] }}/projects/{{ model.odkproject.remote_id }}" width="300" height="300">
+            {% else %}
+                <span>No app user defined in ODK project. Please select a different ODK project that includes an app user</span>
+            {% endif %}
+        </div>
+    </div>
+    <table class="table table-hover table-bordered searchable">
+    {% for c, name in details_columns %}
+      <tr>
+        <td>
+          <b>{{ name }}</b>
+        </td>
+        <td>
+        {{ get_value(model, c) }}
+        </td>
+      </tr>
+    {% endfor %}
+    </table>
 {% endblock %}

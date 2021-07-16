@@ -1,1 +1,130 @@
 {% extends 'admin/model/create.html' %}
+{% block body %}
+  {% block create_form %}
+    {% call lib.form_tag(action=None) %}
+
+    {{ lib.render_form_fields(form, form_opts=form_opts) }}
+    <hr>
+    <!--  Add the required fields to configure the right ODM project-->
+    <div class="row" id="extra_config">
+      <div class="col border-right">
+        <h6>ODK project selection</h6>
+        <hr>
+        <div id="ODK_view">
+            <div class="form-group">
+                <label for="odk_config" class="control-label">Server</label>
+                <select class="form-control" data-role="select2" id="odk_config" onchange="get_odk_projects()" name="odk_config" required>
+                    <option disabled selected value> -- select an option -- </option>
+                {% for config in odk_configs %}
+                    <option value="{{ config.id }}">{{ config }}</option>
+                {% endfor %}
+                </select>
+                <div class="btn-toolbar">
+                    <button type="button" id="odk_server_button" class="btn btn-primary mt-2" onClick="location.href='{{ url_for('odm.create_view') }}';">New server</button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="odk_project" class="control-label">Project</label>
+                <select class="form-control" data-role="select2" id="odk_project" name="odk_project" required>
+                </select>
+                <div class="btn-toolbar">
+                    <button type="button" id="odk_project_create" disabled="true" data-toggle="modal" data-target="#newOdkProject" class="btn btn-primary mt-2 mx-2" >New project</button>
+                    <button type="button" id="odk_project_delete" disabled="true" class="btn btn-danger mt-2 mx-2">Delete project</button>
+                </div>
+            </div>
+        </div>
+      </div>
+      <div class="col">
+        <h6>ODM project selection</h6>
+        <hr>
+        <div id="ODM_view">
+            <div class="form-group">
+                <label for="odm_config" class="control-label">Server</label>
+                <select class="form-control" data-role="select2" id="odm_config" onchange="get_odm_projects()" name="odm_config" required>
+                    <option disabled selected value> -- select an option -- </option>
+                {% for config in odm_configs %}
+                    <option value="{{ config.id }}">{{ config }}</option>
+                {% endfor %}
+                </select>
+                <div class="btn-toolbar">
+                    <button type="button" id="odm_server_button" class="btn btn-primary mt-2" onClick="location.href='{{ url_for('odm.create_view') }}';">New server</button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="odm_project" class="control-label">Project</label>
+                <select class="form-control" data-role="select2" id="odm_project" name="odm_project" required>
+                </select>
+                <div class="btn-toolbar">
+                    <button type="button" id="odm_project_create" disabled="true" data-toggle="modal" data-target="#newOdmProject" class="btn btn-primary mt-2 mx-2" >New project</button>
+                    <button type="button" id="odm_project_delete" disabled="true" class="btn btn-danger mt-2 mx-2">Delete project</button>
+                </div>
+            </div>
+        </div>
+      </div>
+    </div>
+    {{ lib.render_form_buttons(return_url, extra(), False) }}
+  {% endcall %}
+    <!-- Modal fpr new ODM Project-->
+    <div class="modal fade" id="newOdmProject" tabindex="-1" role="dialog" aria-labelledby="newProjectLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="newProjectLabel">New ODM Project</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form role="form">
+                        <div class="form-group">
+                            <label for="odm_project_name" class="control-label">Name</label>
+                            <input class="form-control" id="odm_project_name" name="odm_project_name" required="" type="text" value="">
+                        </div>
+                        <div class="form-group ">
+                            <label for="odm_project_desc" class="control-label">Description (optional)</label>
+                            <textarea class="form-control" id="odm_project_desc" rows="3"></textarea>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <button type="button" onclick="save_odm_project()" class="btn btn-primary save">Save project</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    <!-- Modal for new ODM Project-->
+    </div>
+    <!-- Modal for new ODK Project-->
+    <div class="modal fade" id="newOdkProject" tabindex="-1" role="dialog" aria-labelledby="newProjectLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="newOdkProjectLabel">New ODK Project</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form role="form">
+                        <div class="form-group">
+                            <label for="odk_project_name" class="control-label">Name</label>
+                            <input class="form-control" id="odk_project_name" name="odm_project_name" required="" type="text" value="">
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <button type="button" onclick="save_odk_project()" class="btn btn-primary save">Save project</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    <!-- Modal for new ODK Project-->
+    </div>
+
+  {% endblock %}
+
+{% endblock %}
+{% block tail %}
+  {{ super() }}
+  <script src="{{ url_for('static', filename='js/mesh/create.js') }}"></script>
+{% endblock %}

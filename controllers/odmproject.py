@@ -32,3 +32,14 @@ def create_project():
     db.refresh(odm_project)
     return jsonify(odm_project.to_dict())
 
+@odmproject_api.errorhandler(ValidationError)
+@odmproject_api.errorhandler(ValueError)
+def handle(e):
+    """
+    Custom error handling for ODM project API endpoints.
+
+    :param e:
+    :return:
+    """
+    return jsonify({"error": "Invalid input for ODM project", "message": str(e)}), 400
+

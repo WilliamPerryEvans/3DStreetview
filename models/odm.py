@@ -39,5 +39,5 @@ class Odm(Base, SerializerMixin):
         get a token from server config
         :return:
         """
-        res = odm_requests.token_auth(self.url, self.user, self.password)
+        res = odm_requests.get_token_auth(self.url, self.user, self.password)
         return res.json()['token']
