@@ -2,8 +2,8 @@ import json
 from flask import Blueprint, jsonify, request, flash, url_for, redirect
 from models.mesh import Mesh
 from models.odk import Odk
-from odk2odm import odk_api as odk_req
-from odk2odm import odm_req
+from odk2odm import odk_requests
+from odk2odm import odm_requests
 # API components that retrieve or download data from database for use on front end
 mesh_api = Blueprint("mesh_api", __name__)
 
@@ -25,7 +25,7 @@ def post_attachment():
     mesh = Mesh.query.get(id)
     odk = mesh.odkproject.odk
     # retrieve photo
-    res = odk_req.attachment(odk.url, odk.name, odk.password, **content["odk_kwargs"])
+    res = odk_requests.attachment(odk.url, odk.name, odk.password, **content["odk_kwargs"])
     # post it on the task
     odmproject = mesh.odmproject
     odm = odmproject.odm
@@ -37,7 +37,7 @@ def post_attachment():
     #     file = request.files.get(k)
     #     fields[k] = (file.filename, file.stream.read(), file.content_type)
     try:
-        res = odm_req.post_upload(odm.url, odm.token, odmproject.id, fields=fields, **content["odm_kwargs"])  # odm_kwargs should contain the task_id
+        res = odm_requests.post_upload(odm.url, odm.token, odmproject.id, fields=fields, **content["odm_kwargs"])  # odm_kwargs should contain the task_id
         return jsonify(res.json())
     except:
         return f"Page {odm.url} does not exist", 404
