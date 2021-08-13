@@ -71,10 +71,10 @@
         <div class="row">
             <div class="col">
                 <div class="btn-group" role="group" aria-label="Basic example">
-                    <button type="button" class="btn btn-primary mx-1"><i class="fas fa-cloud-download-alt"></i> Download 3D mesh</button>
-                    <button type="button" class="btn btn-primary mx-1"><i class="fas fa-play-circle"></i>Launch task</button>
-                    <button type="button" class="btn btn-primary mx-1"><i class="fas fa-stop-circle"></i>Cancel task</button>
-                    <button type="button" class="btn btn-danger"><i class="fas fa-trash-alt"></i> Delete</button>
+                    <button type="button" id="odm_download" class="btn btn-primary mx-1" disabled><i class="fas fa-cloud-download-alt"></i> Download 3D mesh</button>
+                    <button type="button" id="odm_launch" class="btn btn-primary mx-1" disabled><i class="fas fa-play-circle"></i>Launch task</button>
+                    <button type="button" id="odm_cancel" class="btn btn-primary mx-1" disabled><i class="fas fa-stop-circle"></i>Cancel task</button>
+                    <button type="button" id="odm_delete" class="btn btn-danger" disabled><i class="fas fa-trash-alt"></i> Delete</button>
                 </div>
             </div>
         </div>
@@ -112,7 +112,7 @@
 <hr>
 <div class="row">
 <!--    <div class="col">-->
-        <h2>ODK submissions</h2><br>
+        <h2>ODK submissions</h2>
         <span>Select an ODK form to list all current submissions, make a selection and get them uploaded in the
             currently selected ODM task. Don't worry about selecting photos you already uploaded, they'll be
             automatically skipped.</span><br><br>
@@ -132,6 +132,7 @@
             data-side-pagination="server"
             data-pagination="true"
             data-page-size="25"
+            data-icons-prefix="fas"
             data-buttons="buttons">
       <thead>
         <tr>

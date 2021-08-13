@@ -18,19 +18,18 @@ def get_meshes():
     return jsonify([d.to_dict() for d in meshes])
 
 
-@mesh_api.route("/api/mesh/<id>/", methods=["POST"])
+@mesh_api.route("/api/mesh/<id>", methods=["POST"])
 def post_attachment():
     # retrieve content
     content = request.get_json()
     mesh = Mesh.query.get(id)
     odk = mesh.odkproject.odk
+    odmproject = mesh.odmproject
+    odm = odmproject.odm  # odm server record
     # retrieve photo
     res = odk_requests.attachment(odk.url, odk.name, odk.password, **content["odk_kwargs"])
     # post it on the task
-    odmproject = mesh.odmproject
-    odm = odmproject.odm
     # retrieve file contents (should only contain "images" but checking for all keys to make sure)
-
     fields = {"images": (content["odk_kwargs"]["fileName"], res.content, "images/jpg")}
     # fields = {}
     # for k in request.files.keys():

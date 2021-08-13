@@ -38,7 +38,7 @@ function removeOptions(selectElement) {
 function addDisabledOption(selectElement) {
     var option = document.createElement("option");
     option.text = " -- select an option -- ";
-//    option.value = x.id;
+    option.value = null;
     option.disabled = true;
     option.selected = true;
     selectElement.add(option);

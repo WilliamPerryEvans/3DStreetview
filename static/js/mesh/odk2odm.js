@@ -1,3 +1,10 @@
+const odkconfig_id = $('input#odk_config').val()
+const odkproject_id = $('input#odkproject_id').val();
+const odmconfig_id = $('input#odm_config').val();
+const odmproject_id = $('input#odmproject_id').val();
+
+const id = $('input#mesh_id').val();
+
 $(document).ready(function () {
     // fill drop down
     get_odm_tasks();
@@ -5,8 +12,6 @@ $(document).ready(function () {
 });
 
 function get_odk_forms() {
-    const odkconfig_id = $('input#odk_config').val();
-    const odkproject_id = $('input#odkproject_id').val();
     var form_select = document.getElementById("odk_form");
     removeOptions(form_select);
     addDisabledOption(form_select);
@@ -34,15 +39,12 @@ function get_odk_forms() {
 
 function get_submissions() {
     // get submissions of selected ODK form
-    const odkconfig_id = $('input#odk_config').val();
-    const odkproject_id = $('input#odkproject_id').val();
     form_id = document.getElementById('odk_form').value;
     url = `/api/odk/${odkconfig_id}/projects/${odkproject_id}/forms/${form_id}/submissions`
     $.getJSON(
         url,
         function(submissions) {
             // get the list of attachments per submission
-            attachments = submissions.map(get_attachments);
             console.log(submissions);
             // fill bootstrap table
             $('#submissions').bootstrapTable('load', submissions)
@@ -67,9 +69,6 @@ function get_attachments(submission){
 
 function get_odm_tasks()
 {    // get current id of mesh
-    const id = $('input#mesh_id').val();
-    const odmconfig_id = $('input#odm_config').val();
-    const odmproject_id = $('input#odmproject_id').val();
     document.getElementById("task_create_button").disabled = true;
     document.getElementById("task_delete_button").disabled = true;
     var task_select = document.getElementById("odm_task");
@@ -107,9 +106,6 @@ function get_odm_tasks()
 function get_odm_task()
 {
     // get current id of mesh
-    const id = $('input#mesh_id').val();
-    const odmconfig_id = $('#odm_config').val();
-    const odmproject_id = $('input#odmproject_id').val();
     var task_select = document.getElementById("odm_task");
     const task_id = task_select.value;
     document.getElementById("task_create_button").disabled = true;
@@ -128,6 +124,17 @@ function get_odm_task()
                 prog = document.getElementById('running_progress')
                 prog.style = `width: ${data.running_progress*100}%`
                 prog.textContent = `${Math.round(data.running_progress*100)} %`;
+                console.log(data);
+                // handle status of buttons
+                if (data.images_count > 0 && (data.status != 10 && data.status != 20)){   // status checks are according to https://docs.webodm.org/#status-codes
+                    // make the run button active
+                    document.getElementById('odm_launch').disabled = false
+                    document.getElementById('odm_cancel').disabled = true
+                } else {
+                    document.getElementById('odm_launch').disabled = true
+                    document.getElementById('odm_cancel').disabled = false
+                    document.getElementById('odm_delete').disabled = false
+                }
             });
             flashMessage([{"type": "success", "message": `Retrieved task ${task_id}`}]);
             document.getElementById("task_create_button").disabled = false;
@@ -138,9 +145,6 @@ function get_odm_task()
 
 function create_odm_task() {
     // get current id of mesh
-    const id = $('input#mesh_id').val();
-    const odmconfig_id = $('#odm_config').val();
-    const odmproject_id = $('input#odmproject_id').val();
     const task_name = $('input#odm_task_name').val();
     content = {
         "name": task_name,
@@ -167,17 +171,117 @@ function create_odm_task() {
     });
 }
 
+function getodk_postodm(all=false) {
+//    alert('This button will allow you to transfer. Not implemented yet.')
+    // get the selected items
+    if (all==false) {
+        // only get selected
+        submissions = $('#submissions').bootstrapTable('getSelections')
+    } else {
+        // get all items
+        submissions = $('#submissions').bootstrapTable('getData');
+    }
+//    console.log(submissions);
+    // get a list (per survey) of lists of all attachments in each survey
+    // check if an ODM task is selected, and has the right status if not return msg
+    var task_select = document.getElementById("odm_task");
+    const task_id = task_select.value;
+    check_odm_task = false;  // check if the odm task is receptive to photo uploads
+    if (task_id != "null") {
+        // check if the task can be retrieved
+        $.getJSON(
+            `/api/odm/${odmconfig_id}/projects/${odmproject_id}/tasks/${task_id}`,
+            function(data) {
+                if ("id" in data) {
+                    // check if status is open to photos
+                    if (data.status != 10 && data.status != 20) { // not queued or running
+                        // push all photos to odm server
+                        submissions.map(t => transfer(t, ));
+                    }
+                } else {
+                    flashMessage([{"type": "danger", "message": "ODM server is online, but cannot find chosen task."}]);
+                }
+            }
+        )
+        .fail(function() {
+            // flash a message as the API call failed
+            flashMessage([{"type": "danger", "message": "Not able to retrieve task, is the ODM server offline?"}]);
+        });
+    }
+//    if
+//    submit(data)
+
+}
+function transfer(submission){
+    attachments = get_attachments(submission);
+    formId = document.getElementById('odk_form').value;
+    attachments.map(x => file_transfer(x, instanceId=submission.instanceId)); // transfer all files per submission
+    // check if attachments are already present on odm side (by getting a thumbnail)
+    // if not, transfer file to odm
+    // finalize by checking if ODM task
+
+}
+
+function file_transfer(attachment, instanceId){
+    if (attachment.exists) {
+        // prepare kwargs for retrieval of attachment from odk
+        odk_kwargs = {
+            projectId: odkproject_id,
+            formId: document.getElementById('odk_form').value,
+            instanceId: instanceId,
+            fileName: attachment.name
+        }
+        odm_kwargs = {
+            task_id: document.getElementById("odm_task").value;
+        }
+        content = {
+            odk_kwargs: odk_kwargs,
+            odm_kwargs: odm_kwargs
+        }
+        $.ajax({
+            type: 'POST',
+            url: `/api/mesh/${id}`,
+            data: JSON.stringify(content),
+            contentType: "application/json",
+            dataType: 'json',
+            // Submit parent form on success.
+            success: function(data) {
+                console.log(data);
+                // refresh project list
+                flashMessage([{"type": "success", "message": `Uploaded file ${attachment.name}`}]);
+
+            },
+            // Enable save button again.
+            error: function() {
+                flashMessage([{"type": "danger", "message": `Could not upload file ${attachment.name}`}])
+            }
+        });
+    }
+}
+
+
 function buttons () {
     return {
       btnTransfer: {
         text: 'Transfer to ODK',
-        icon: 'fa-exchange',
-        event: function () {
-          alert('This button will allow you to transfer. Not implemented yet.')
+        icon: 'fa-exchange-alt',
+        event: function() {
+            getodk_postodm(all=true)  // perform transfer of all files
         },
         attributes: {
           title: 'Transfer all files filtered below to the selected ODM task'
         }
       },
+      btnTransferSelect: {
+        text: 'Transfer selection to ODK',
+        icon: 'fa-check-square',
+        event: function() {
+            getodk_postodm(all=false)  // perform transfer of all files
+        },
+        attributes: {
+          title: 'Transfer selected files filtered below to the selected ODM task'
+        }
+      },
     }
 }
+
