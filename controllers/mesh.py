@@ -19,7 +19,7 @@ def get_meshes():
 
 
 @mesh_api.route("/api/mesh/<id>", methods=["POST"])
-def post_attachment():
+def post_attachment(id):
     # retrieve content
     content = request.get_json()
     mesh = Mesh.query.get(id)
@@ -27,16 +27,17 @@ def post_attachment():
     odmproject = mesh.odmproject
     odm = odmproject.odm  # odm server record
     # retrieve photo
-    res = odk_requests.attachment(odk.url, odk.name, odk.password, **content["odk_kwargs"])
+    print(content)
+    res = odk_requests.attachment(odk.url, (odk.user, odk.password), **content["odk_kwargs"])
     # post it on the task
     # retrieve file contents (should only contain "images" but checking for all keys to make sure)
-    fields = {"images": (content["odk_kwargs"]["fileName"], res.content, "images/jpg")}
+    fields = {"images": (content["odk_kwargs"]["filename"], res.content, "images/jpg")}
     # fields = {}
     # for k in request.files.keys():
     #     file = request.files.get(k)
     #     fields[k] = (file.filename, file.stream.read(), file.content_type)
     try:
-        res = odm_requests.post_upload(odm.url, odm.token, odmproject.id, fields=fields, **content["odm_kwargs"])  # odm_kwargs should contain the task_id
+        res = odm_requests.post_upload(odm.url, odm.token, odmproject.remote_id, fields=fields, **content["odm_kwargs"])  # odm_kwargs should contain the task_id
         return jsonify(res.json())
     except:
         return f"Page {odm.url} does not exist", 404

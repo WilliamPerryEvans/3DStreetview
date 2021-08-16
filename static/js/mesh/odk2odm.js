@@ -229,10 +229,10 @@ function file_transfer(attachment, instanceId){
             projectId: odkproject_id,
             formId: document.getElementById('odk_form').value,
             instanceId: instanceId,
-            fileName: attachment.name
+            filename: attachment.name
         }
         odm_kwargs = {
-            task_id: document.getElementById("odm_task").value;
+            task_id: document.getElementById("odm_task").value
         }
         content = {
             odk_kwargs: odk_kwargs,
