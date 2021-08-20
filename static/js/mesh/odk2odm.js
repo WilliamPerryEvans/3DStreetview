@@ -6,6 +6,7 @@ const id = $('input#mesh_id').val();
 var progress_title = "Upload progress";
 var odk2odm_total = 0;
 var odk2odm_progress = 0;  // percentage of upload progress
+var task_data = {};
 
 $(document).ready(function () {
     // fill drop down
@@ -114,6 +115,7 @@ function get_odm_task()
         $.getJSON(
             `/api/odm/${odmconfig_id}/projects/${odmproject_id}/tasks/${task_id}`,
             function(data) {
+                task_data = data;  // globalize current task data
                 // change content of status texts and bars
                 $('#task_id span').text(`Task: ${task_id}`);
                 $('#images_count span').text(` ${data.images_count}`);
@@ -205,16 +207,49 @@ function commit_odm_task() {
     document.getElementById('odm_delete').disabled = true
     var task_select = document.getElementById("odm_task");
     const task_id = task_select.value;
+    // get the status of the task and decide what to do
+    if (task_data.status == 50 || task_data.status == 40) {
+        url = `/api/odm/${odmconfig_id}/projects/${odmproject_id}/tasks/${task_id}/restart/`
+    } else {
+        url = `/api/odm/${odmconfig_id}/projects/${odmproject_id}/tasks/${task_id}/commit/`
+    }
+    console.log(url)
     $.ajax({
         type: 'POST',
-        url: `/api/odm/${odmconfig_id}/projects/${odmproject_id}/tasks/${task_id}/commit/`,
+        url: url,
+        contentType: "application/json",
+        dataType: 'json',
+        // Submit parent form on success.
+        success: function(data) {
+            console.log(data);
+            get_odm_task();
+            flashMessage([{"type": "success", "message": "ODM task commited"}]);
+//            document.getElementById("task_delete_button").disabled = true;
+//            document.getElementById("task_cancel_button").disabled = false;
+        },
+        // Enable save button again.
+        error: function() { flashMessage([{"type": "danger", "message": "Not able to commit ODM task"}]) }
+    });
+}
+
+function cancel_odm_task() {
+    // Commit odm task
+    document.getElementById('odm_download').disabled = true
+    document.getElementById('odm_commit').disabled = true
+    document.getElementById('odm_cancel').disabled = true
+    document.getElementById('odm_delete').disabled = true
+    var task_select = document.getElementById("odm_task");
+    const task_id = task_select.value;
+    $.ajax({
+        type: 'POST',
+        url: `/api/odm/${odmconfig_id}/projects/${odmproject_id}/tasks/${task_id}/cancel/`,
         contentType: "application/json",
         dataType: 'json',
         // Submit parent form on success.
         success: function(data) {
             console.log(data);
             // refresh project list
-            get_odm_tasks();
+            get_odm_task();
             flashMessage([{"type": "success", "message": "ODM task commited"}]);
 //            document.getElementById("task_delete_button").disabled = false;
         },
@@ -306,7 +341,7 @@ function file_transfer(attachment, instanceId){
                 // refresh project list
                 odk2odm_progress += 1;
                 get_odm_task();
-                progress_title = `Uploaded ${attachment.name}`;
+                progress_title = `${data}`;
 
             },
             // Enable save button again.

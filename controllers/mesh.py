@@ -26,19 +26,22 @@ def post_attachment(id):
     odk = mesh.odkproject.odk
     odmproject = mesh.odmproject
     odm = odmproject.odm  # odm server record
+    # try if file already exists by checking for a thumbnail
+    res = odm_requests.get_thumbnail(base_url=odm.url, token=odm.token, project_id=odmproject.remote_id, filename=content["odk_kwargs"]["filename"], **content["odm_kwargs"])
+    if res.status_code == 200:
+        return jsonify(f"{content['odk_kwargs']['filename']} is already present in ODM task")
     # retrieve photo
     print(content)
     res = odk_requests.attachment(odk.url, (odk.user, odk.password), **content["odk_kwargs"])
     # post it on the task
     # retrieve file contents (should only contain "images" but checking for all keys to make sure)
     fields = {"images": (content["odk_kwargs"]["filename"], res.content, "images/jpg")}
-    # fields = {}
-    # for k in request.files.keys():
-    #     file = request.files.get(k)
-    #     fields[k] = (file.filename, file.stream.read(), file.content_type)
     try:
         res = odm_requests.post_upload(odm.url, odm.token, odmproject.remote_id, fields=fields, **content["odm_kwargs"])  # odm_kwargs should contain the task_id
-        return jsonify(res.json())
+        if res.status_code == 200:
+            return jsonify(f"{content['odk_kwargs']['filename']} uploaded")
+        else:
+            return jsonify(res.json())
     except:
         return f"Page {odm.url} does not exist", 404
 
