@@ -42,7 +42,7 @@
             </select>
             <div class="btn-toolbar">
                 <button type="button" id="task_create_button" disabled="true" data-toggle="modal" data-target="#newOdmTask" class="btn btn-primary mt-2 mx-2">New task</button>
-                <button type="button" id="task_delete_button" disabled="true" class="btn btn-danger mt-2 mx-2">Delete task</button>
+                <button type="button" id="task_delete_button" disabled="true" onclick="delete_odm_task()" class="btn btn-danger mt-2 mx-2">Delete task</button>
             </div>
         </div>
 
@@ -72,7 +72,7 @@
             <div class="col">
                 <div class="btn-group" role="group" aria-label="Basic example">
                     <button type="button" id="odm_download" class="btn btn-primary mx-1" disabled><i class="fas fa-cloud-download-alt"></i> Download 3D mesh</button>
-                    <button type="button" id="odm_launch" class="btn btn-primary mx-1" disabled><i class="fas fa-play-circle"></i>Launch task</button>
+                    <button type="button" id="odm_commit" class="btn btn-primary mx-1" onclick="commit_odm_task()" disabled><i class="fas fa-play-circle"></i>Launch task</button>
                     <button type="button" id="odm_cancel" class="btn btn-primary mx-1" disabled><i class="fas fa-stop-circle"></i>Cancel task</button>
                     <button type="button" id="odm_delete" class="btn btn-danger" disabled><i class="fas fa-trash-alt"></i> Delete</button>
                 </div>

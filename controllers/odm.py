@@ -109,6 +109,16 @@ def post_upload(id, project_id, task_id):
     except:
         return f"Page {odm.url} does not exist", 404
 
+@odm_api.route("/api/odm/<id>/projects/<project_id>/tasks/<task_id>/remove/", methods=["POST"])
+def delete_task(id, project_id, task_id):
+    # retrieve config from database
+    odm = Odm.query.get(id)
+    try:
+        res = odm_requests.delete_task(odm.url, odm.token, project_id, task_id)
+        return jsonify(res.json())
+    except:
+        return f"Page {odm.url} does not exist", 404
+
 
 @odm_api.route("/api/odm/<id>/projects/<project_id>/tasks/<task_id>/commit/", methods=["POST"])
 def commit(id, project_id, task_id):

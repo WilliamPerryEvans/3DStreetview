@@ -122,18 +122,16 @@ function get_odm_task()
                 prog = document.getElementById('upload_progress')
                 prog.style = `width: ${odk2odm_progress/odk2odm_total*100}%`
                 prog.textContent = `${odk2odm_progress}/${odk2odm_total}`;
-//                prog.textContent = `${Math.round(data.upload_progress*data.images_count)}/${data.images_count}`;
                 prog = document.getElementById('running_progress')
                 prog.style = `width: ${data.running_progress*100}%`
                 prog.textContent = `${Math.round(data.running_progress*100)} %`;
-//                console.log(data);
                 // handle status of buttons
                 if (data.images_count > 0 && (data.status != 10 && data.status != 20)){   // status checks are according to https://docs.webodm.org/#status-codes
                     // make the run button active
-                    document.getElementById('odm_launch').disabled = false
+                    document.getElementById('odm_commit').disabled = false
                     document.getElementById('odm_cancel').disabled = true
                 } else {
-                    document.getElementById('odm_launch').disabled = true
+                    document.getElementById('odm_commit').disabled = true
                     document.getElementById('odm_cancel').disabled = false
                     document.getElementById('odm_delete').disabled = false
                 }
@@ -145,7 +143,31 @@ function get_odm_task()
     }
 }
 
-
+function delete_odm_task() {
+    // Deletes selected odm task from odm server
+    document.getElementById("task_delete_button").disabled = true;
+    var task_select = document.getElementById("odm_task");
+    const task_id = task_select.value;
+    if (confirm(`If you delete task ${task_id}, all of its assets will be destroyed`)) {
+        $.ajax({
+            type: 'POST',
+            url: `/api/odm/${odmconfig_id}/projects/${odmproject_id}/tasks/${task_id}/remove/`,
+    //        data: JSON.stringify(content),
+            contentType: "application/json",
+            dataType: 'json',
+            // Submit parent form on success.
+            success: function(data) {
+                console.log(data);
+                // refresh project list
+                get_odm_tasks();
+                flashMessage([{"type": "success", "message": "ODM task deleted"}]);
+                document.getElementById("task_delete_button").disabled = false;
+            },
+            // Enable save button again.
+            error: function() { flashMessage([{"type": "danger", "message": "Not able to delete ODM task"}]) }
+        });
+    }
+}
 
 function create_odm_task() {
     // get current id of mesh
@@ -175,6 +197,32 @@ function create_odm_task() {
     });
 }
 
+function commit_odm_task() {
+    // Commit odm task
+    document.getElementById('odm_download').disabled = true
+    document.getElementById('odm_commit').disabled = true
+    document.getElementById('odm_cancel').disabled = true
+    document.getElementById('odm_delete').disabled = true
+    var task_select = document.getElementById("odm_task");
+    const task_id = task_select.value;
+    $.ajax({
+        type: 'POST',
+        url: `/api/odm/${odmconfig_id}/projects/${odmproject_id}/tasks/${task_id}/commit/`,
+        contentType: "application/json",
+        dataType: 'json',
+        // Submit parent form on success.
+        success: function(data) {
+            console.log(data);
+            // refresh project list
+            get_odm_tasks();
+            flashMessage([{"type": "success", "message": "ODM task commited"}]);
+//            document.getElementById("task_delete_button").disabled = false;
+        },
+        // Enable save button again.
+        error: function() { flashMessage([{"type": "danger", "message": "Not able to commit ODM task"}]) }
+    });
+}
+
 function getodk_postodm(all=false) {
     odk2odm_progress = 0;
 //    alert('This button will allow you to transfer. Not implemented yet.')
@@ -190,8 +238,6 @@ function getodk_postodm(all=false) {
     attachments = submissions.map(get_attachments);
     no_attachments = attachments.map(a => a.length);
     odk2odm_total = no_attachments.reduce((a, b) => a + b, 0)  // sum up all lengths of attachments to know total no. photos
-//    console.log(no_attachments);
-//    console.log(submissions);
     // get a list (per survey) of lists of all attachments in each survey
     // check if an ODM task is selected, and has the right status if not return msg
     var task_select = document.getElementById("odm_task");
@@ -226,7 +272,7 @@ function transfer(submission){
     attachments = get_attachments(submission);
     formId = document.getElementById('odk_form').value;
     attachments.map(x => file_transfer(x, instanceId=submission.instanceId)); // transfer all files per submission
-    // check if attachments are already present on odm side (by getting a thumbnail)
+    // TODO: check if attachments are already present on odm side (by getting a thumbnail)
     // if not, transfer file to odm
     // finalize by checking if ODM task
 
@@ -271,7 +317,6 @@ function file_transfer(attachment, instanceId){
     }
 }
 
-
 function buttons () {
     return {
       btnTransfer: {
@@ -296,32 +341,6 @@ function buttons () {
       },
     }
 }
-
-//function update_odm() {
-//    console.log("Updating ODM task status");
-//    task_id: document.getElementById("odm_task").value
-//    if (task_id != "null") {
-//        // check if the task can be retrieved
-//        $.getJSON(
-//            `/api/odm/${odmconfig_id}/projects/${odmproject_id}/tasks/${task_id}`,
-//            function(data) {
-//                if ("id" in data) {
-//                    // check if status is open to photos
-//
-//                    if (data.status != 10 && data.status != 20) { // not queued or running
-//                        // push all photos to odm server
-//                        submissions.map(t => transfer(t, ));
-//                    }
-//                } else {
-//                    console.log(`Cannot update task ${task_id}`);
-//                }
-//            }
-//        )
-//        .fail(function() {
-//            // flash a message as the API call failed
-//            flashMessage([{"type": "danger", "message": "Not able to retrieve task, is the ODM server offline?"}]);
-//        });
-//
-//
-//}
-//setInterval('get_odm_task()', 1000);
+$( document ).ready(function() {
+    setInterval(get_odm_task, 1000);
+});
