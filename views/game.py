@@ -1,5 +1,5 @@
 import json
-from views.general import UserModelView
+from views.general import PublicModelView
 from models.game import Game
 from flask import request, redirect, flash
 from flask_admin import form, expose
@@ -9,7 +9,7 @@ from flask_admin.helpers import get_redirect_target
 from flask_admin.model.helpers import get_mdict_item_or_list
 from wtforms.fields import HiddenField
 
-class GameView(UserModelView):
+class GameView(PublicModelView):
     can_edit = False
 
     column_list = (
