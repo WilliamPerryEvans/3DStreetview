@@ -32,7 +32,6 @@
           <li class="nav-item">
               <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapse{{ item.name }}" aria-expanded="true" aria-controls="collapse{{ item.name }}">
                 {% if 'Servers' == item.name %}<i class="fas fa-fw fa-cog"></i>  <!--Hard coded cog wheel for servers-->
-                {% elif 'Meshes' == item.name %}<i class="fab fa-unity"></i>
                 {% endif %}
                 {{ menu_icon(item) }}<span>{{ item.name }}</span>
               </a>
@@ -67,9 +66,15 @@
             {%- else %}
           <li class="nav-item">
         {%- endif %}
-      <a class="nav-link" href="{{ item.get_url() }}"{% if item.target %} target="{{ item.target }}"{% endif %}>
-        <span>{% if 'Home' == item.name %}<i class="fas fa-fw fa-tachometer-alt"></i>Dashboard{% else %}{{ menu_icon(item) }}{{ item.name }}{% endif %}</span></a>
-      </li>
+          <a class="nav-link" href="{{ item.get_url() }}"{% if item.target %} target="{{ item.target }}"{% endif %}>
+            <span>
+              {% if 'Home' == item.name %}<i class="fas fa-fw fa-tachometer-alt"></i>Dashboard
+              {% elif 'Meshes' == item.name %}<i class="fas fa-border-all"></i> {{ item.name }}
+              {% elif 'Games' == item.name %}<i class="fab fa-unity"></i> {{ item.name }}
+              {% else %}{{ menu_icon(item) }}{{ item.name }}{% endif %}
+
+            </span></a>
+          </li>
       {% if 'Home' == item.name %}
         <hr class="sidebar-divider">
         <!-- Heading -->
