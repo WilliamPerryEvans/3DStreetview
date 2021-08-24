@@ -1,7 +1,7 @@
 console.log("Check");
-console.log($('#mesh_id').val());
+console.log($('#game_id').val());
 
-const id = $('input#mesh_id').val();
+const id = $('input#game_id').val();
 var buildUrl = `/static/mesh/${id}`;
 var jsUrl = `/static/unityFramework`
 console.log(buildUrl);

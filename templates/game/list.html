@@ -1,0 +1,82 @@
+{% extends 'admin/model/list.html' %}
+{% block head %}
+    {{ super() }}
+    <head>
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+       integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+       crossorigin=""/>
+    </head>
+{% endblock %}
+{% block body %}
+<div class="row">
+    <div class="col">
+        <div class="container">
+            <h2>Play a game</h2><span>Start playing a game on a location of your liking. Just click on the location on the map or hit the details icon next to a game record below.</span></div>
+    </div>
+    <div class="col">
+        <div class="container" style="height: 400px;width:inherit;"><div id="map" style="width:inherit;"></div></div>
+    </div>
+</div>
+{{ super() }}
+{% endblock %}
+
+{% block tail %}
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+        integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+        crossorigin="">
+    </script>
+    <script>
+        var map = new L.map('map').setView({lon: 0, lat: 0}, 2);
+        var maxAutoZoom = 15;
+        var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 18,
+            attribution: '&copy; <a href="https://openstreetmap.org/copyright" target="_blank">OpenStreetMap contributors' +
+                '</a> ',
+            tileSize: 256,
+        });
+        var googleSat = L.tileLayer('http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+            maxZoom: 20,
+            subdomains:['mt0','mt1','mt2','mt3']
+        });
+        var googleTer = L.tileLayer('http://{s}.google.com/vt/lyrs=p&x={x}&y={y}&z={z}', {
+            maxZoom: 20,
+            subdomains:['mt0','mt1','mt2','mt3']
+        });
+        var baseMaps = {
+            "OpenStreetMap": osmLayer,
+            "Google Satellite": googleSat,
+            "Google Terrain": googleTer
+
+        }
+        L.control.layers(baseMaps).addTo(map);
+        osmLayer.addTo(map);
+        // add a scale at at your map.
+        var scale = L.control.scale().addTo(map);
+
+        // add markers
+        var markers = L.featureGroup();
+        markers.addTo(map);
+
+
+        {% for row in data %}
+            var marker = L.marker([{{ get_value(row.mesh, 'latitude') }}, {{ get_value(row.mesh, 'longitude') }}], {id:
+            {{ get_value(row.mesh, 'id') }} });
+            toolTip = "<dl>" +
+                "<dt>ID: {{ get_value(row.mesh, 'id') }}</dt>" +
+                "<dt>Name: {{ get_value(row.mesh, 'name') }} </dt>" +
+                "</dl>"
+            marker.bindTooltip(toolTip);
+            marker.on("click", function (e) {
+                // extract the id of the site from marker
+                var id = e.target.options.id
+                // construct a relative end point
+                location.href = '/dashboard/game/details/?id=' + id + '&modal=True'
+            });
+            markers.addLayer(marker);
+        {% endfor %}
+        map.fitBounds(markers.getBounds());
+        setZoomLevel = Math.min(map.getZoom(), maxAutoZoom);
+        map.setZoom(setZoomLevel);
+    </script>
+    {{ super() }}
+{% endblock %}

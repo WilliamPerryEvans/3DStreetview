@@ -1,10 +1,21 @@
 import io
-from flask import Blueprint, jsonify, request, make_response
+from flask import Blueprint, jsonify, request, make_response, g
 from models.odk import Odk
+from models.user import User
 from odk2odm import odk_requests
+
+from flask_httpauth import HTTPBasicAuth
+auth = HTTPBasicAuth()
 # API components that retrieve or download data from database for use on front end
 odk_api = Blueprint("odk_api", __name__)
 
+@auth.verify_password
+def verify_password(username, password):
+    user = User.query.filter_by(email=username).first()
+    if not user or not user.check_password(password):
+        return False
+    g.user = user
+    return True
 
 @odk_api.route("/api/odk/<id>/users", methods=["GET"])
 def get_users(id):
