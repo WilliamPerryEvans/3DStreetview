@@ -303,6 +303,8 @@ function getodk_postodm(all=false) {
             // flash a message as the API call failed
             flashMessage([{"type": "danger", "message": "Not able to retrieve task, is the ODM server offline?"}]);
         });
+    } else {
+        flashMessage([{"type": "danger", "message": "No ODM task selected. Please select an ODM task or create a new one for uploads."}]);
     }
 //    if
 //    submit(data)
@@ -380,6 +382,10 @@ function buttons () {
         }
       },
     }
+}
+
+function mesh_to_game () {
+    alert("This functionality is not yet implemented. If you want to retrieve the mesh, please go to the configured ODM server and project and download it from there.")
 }
 $( document ).ready(function() {
     setInterval(get_odm_task, 3000);

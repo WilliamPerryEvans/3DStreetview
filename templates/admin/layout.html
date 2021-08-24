@@ -69,8 +69,8 @@
           <a class="nav-link" href="{{ item.get_url() }}"{% if item.target %} target="{{ item.target }}"{% endif %}>
             <span>
               {% if 'Home' == item.name %}<i class="fas fa-fw fa-tachometer-alt"></i>Dashboard
-              {% elif 'Meshes' == item.name %}<i class="fas fa-border-all"></i> {{ item.name }}
-              {% elif 'Games' == item.name %}<i class="fab fa-unity"></i> {{ item.name }}
+              {% elif 'Meshes' == item.name %}<i class="fas fa-border-all"></i> Mesh projects
+              {% elif 'Games' == item.name %}<i class="fab fa-unity"></i> Game projects
               {% else %}{{ menu_icon(item) }}{{ item.name }}{% endif %}
 
             </span></a>
