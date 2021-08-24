@@ -137,6 +137,11 @@ function get_odm_task()
                     document.getElementById('odm_cancel').disabled = false
                     document.getElementById('odm_delete').disabled = false
                 }
+                if (data.status == 10 || data.status == 20){
+                    $("#odm_commit").html("<i class=\"fas fa-cog fa-spin\"></i> Task running")
+                } else {
+                    $("#odm_commit").html("<i class=\"fas fa-play-circle\"></i> Launch task")
+                }
             }
         );
         flashMessage([{"type": "success", "message": `Retrieved task ${task_id}`}]);
@@ -377,5 +382,5 @@ function buttons () {
     }
 }
 $( document ).ready(function() {
-    setInterval(get_odm_task, 1000);
+    setInterval(get_odm_task, 3000);
 });
