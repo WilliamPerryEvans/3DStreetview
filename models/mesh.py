@@ -31,7 +31,8 @@ class Mesh(Base, SerializerMixin):
     """
     __tablename__ = "mesh"
     id = Column(Integer, primary_key=True)
-    # project_id = Column(Integer, ForeignKey("project.id"), nullable=False)
+    # Mesh projects are entirely tied to a given user
+    user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
     odmproject_id = Column(Integer, ForeignKey("odmproject.id"))  # also nullable in case a user simply wants to upload a mesh
     odkproject_id = Column(Integer, ForeignKey("odkproject.id"))  # also nullable in case a user simply wants to upload a mesh
     name = Column(String, nullable=False)

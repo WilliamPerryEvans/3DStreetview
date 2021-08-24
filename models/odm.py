@@ -12,6 +12,8 @@ class Odm(Base, SerializerMixin):
     """
     __tablename__ = "odm"
     id = Column(Integer, primary_key=True)
+    # Odm server config are entirely tied to a given user
+    user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
     name = Column(String, nullable=False)
     host = Column(String, nullable=False)
     port = Column(Integer, nullable=False, default=8000)  #
