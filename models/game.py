@@ -14,6 +14,9 @@ class Game(Base, SerializerMixin):
     id = Column(Integer, primary_key=True)
     mesh_id = Column(Integer, ForeignKey("mesh.id"))
     name = Column(String, nullable=False)
+    link = Column(String)
+    lng = Column(String)
+    lat = Column(String)
     zipfile = Column(String)  # if a .zip file containing a mesh is supplied, then this is unzipped immediately.
     mesh = relationship("Mesh")
 

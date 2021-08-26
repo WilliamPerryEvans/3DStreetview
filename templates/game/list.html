@@ -11,7 +11,9 @@
 <div class="row">
     <div class="col">
         <div class="container">
-            <h2>Play a game</h2><span>Start playing a game on a location of your liking. Just click on the location on the map or hit the details icon next to a game record below.</span></div>
+            <h2>Play a game</h2><span>Start playing a game on a location of your liking. Just click on the location on the map or hit the details icon next to a game record below.</span>
+            <p id='data_test'></p>
+        </div>
     </div>
     <div class="col">
         <div class="container" style="height: 400px;width:inherit;"><div id="map" style="width:inherit;"></div></div>
@@ -26,6 +28,8 @@
         crossorigin="">
     </script>
     <script>
+
+
         var map = new L.map('map').setView({lon: 0, lat: 0}, 2);
         var maxAutoZoom = 15;
         var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -57,10 +61,13 @@
         var markers = L.featureGroup();
         markers.addTo(map);
 
+        console.log('test');
 
         {% for row in data %}
-            var marker = L.marker([{{ get_value(row.mesh, 'latitude') }}, {{ get_value(row.mesh, 'longitude') }}], {id:
+            var marker = L.marker([{{ get_value(row.mesh, 'latitude') }}, {{ get_value(row.mesh, 'longitude') }}], {id:console.log({{ get_value(row.mesh, 'latitude') }})
             {{ get_value(row.mesh, 'id') }} });
+            var lat = {{ row }}
+            console.log(lat)
             toolTip = "<dl>" +
                 "<dt>ID: {{ get_value(row.mesh, 'id') }}</dt>" +
                 "<dt>Name: {{ get_value(row.mesh, 'name') }} </dt>" +
@@ -74,6 +81,7 @@
             });
             markers.addLayer(marker);
         {% endfor %}
+
         map.fitBounds(markers.getBounds());
         setZoomLevel = Math.min(map.getZoom(), maxAutoZoom);
         map.setZoom(setZoomLevel);

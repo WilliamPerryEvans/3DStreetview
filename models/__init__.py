@@ -14,7 +14,7 @@ from models import mesh
 from models import game
 
 # TODO: Persistent database by removing drop all once DB models are stable..
-# Base.metadata.drop_all(engine)
+Base.metadata.drop_all(engine)
 
 Base.metadata.create_all(engine)
 DBSession = sessionmaker(bind=engine)

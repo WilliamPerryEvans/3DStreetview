@@ -1,13 +1,49 @@
 {% extends 'admin/model/create.html' %}
+{% block head %}
+    {{ super() }}
+    <head>
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+       integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+       crossorigin=""/>
+    </head>
+{% endblock %}
 {% block body %}
   {% block create_form %}
     {% call lib.form_tag(action=None) %}
-
-    {{ lib.render_form_fields(form, form_opts=form_opts) }}
+    <!--    {{ lib.render_form_fields(form, form_opts=form_opts) }}-->
+    <div class="row" id="extra_config">
+        <div class="col-6">
+            <div class="modal-body">
+                <form role="form">
+                    <div class="form-group">
+                        <label for="latitude" class="control-label">Latitude</label>
+                        <input class="form-control" id="latitude" name="latitude" required type="text" oninput="update_location_input()">
+                    </div>
+                    <div class="form-group">
+                        <label for="longitude" class="control-label">Longitude</label>
+                        <input class="form-control" id="longitude" name="longitude" required type="text" oninput="update_location_input()">
+                    </div>
+                    <div class="form-group">
+                        <label for="name" class="control-label">Mesh name</label>
+                        <input class="form-control" id="name" name="name" required type="text">
+                    </div>
+                    <div class="form-group">
+                        <label for="zipfile" class="control-label">Mesh zipfile</label>
+                        <input class="form-control-file" id="zipfile" name="zipfile" required type="file">
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="col-6">
+            <div class="">
+                <div class="container" style="height: 400px;width:inherit;"><div id="map" style="width:inherit;"></div></div>
+            </div>
+        </div>
+    </div>
     <hr>
     <!--  Add the required fields to configure the right ODM project-->
-    <div class="row" id="extra_config">
-      <div class="col border-right">
+    <div class="row" >
+      <div class="col-6 border-right">
         <h6>ODK project selection</h6>
         <hr>
         <div id="ODK_view">
@@ -34,7 +70,7 @@
             </div>
         </div>
       </div>
-      <div class="col">
+      <div class="col-6">
         <h6>ODM project selection</h6>
         <hr>
         <div id="ODM_view">
@@ -62,9 +98,9 @@
         </div>
       </div>
     </div>
-    {{ lib.render_form_buttons(return_url, extra(), False) }}
-  {% endcall %}
-    <!-- Modal fpr new ODM Project-->
+        {{ lib.render_form_buttons(return_url, extra(), False) }}
+      {% endcall %}
+        <!-- Modal fpr new ODM Project-->
     <div class="modal fade" id="newOdmProject" tabindex="-1" role="dialog" aria-labelledby="newProjectLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -127,4 +163,69 @@
 {% block tail %}
   {{ super() }}
   <script src="{{ url_for('static', filename='js/mesh/create.js') }}"></script>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+        integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+        crossorigin="">
+    </script>
+    <script>
+
+        var map = new L.map('map').setView({lon: 0, lat: 0}, 2);
+        var maxAutoZoom = 15;
+        var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 18,
+            attribution: '&copy; <a href="https://openstreetmap.org/copyright" target="_blank">OpenStreetMap contributors' +
+                '</a> ',
+            tileSize: 256,
+        });
+        var googleSat = L.tileLayer('http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+            maxZoom: 20,
+            subdomains:['mt0','mt1','mt2','mt3']
+        });
+        var googleTer = L.tileLayer('http://{s}.google.com/vt/lyrs=p&x={x}&y={y}&z={z}', {
+            maxZoom: 20,
+            subdomains:['mt0','mt1','mt2','mt3']
+        });
+        var baseMaps = {
+            "OpenStreetMap": osmLayer,
+            "Google Satellite": googleSat,
+            "Google Terrain": googleTer
+
+        }
+        L.control.layers(baseMaps).addTo(map);
+        osmLayer.addTo(map);
+        // add a scale at at your map.
+        var scale = L.control.scale().addTo(map);
+
+        // add markers
+        var markers = L.featureGroup();
+        markers.addTo(map);
+
+        update_location_input = function(){
+            var pos_longitude = document.getElementById('longitude').value;
+            var pos_latitude = document.getElementById('latitude').value;
+            changeMarker(pos_latitude, pos_longitude);
+        }
+
+        var pos_longitude = document.getElementById('longitude').value;
+        var pos_latitude = document.getElementById('latitude').value;
+
+        // Add a marker for the user to pick a location on the map
+        marker = new L.marker([pos_longitude, pos_latitude], {draggable: "true"});
+        // update the marker so that it sets everything in the same way
+        marker.addTo(map);
+
+        // add markers (separate function)
+        map.on("click", function (e) {
+            document.getElementById('latitude').value = e.latlng.lat;
+            document.getElementById('longitude').value = e.latlng.lng;
+            changeMarker(e.latlng.lat, e.latlng.lng);
+        });
+
+        function changeMarker(lat, lng){
+            var newLatLng = new L.LatLng(lat, lng);
+            marker.setLatLng(newLatLng, {draggable: "true"}).bindPopup(newLatLng).update();
+            pos_longitude.value = lat;
+            pos_latitude.value = lng;
+        }
+    </script>
 {% endblock %}

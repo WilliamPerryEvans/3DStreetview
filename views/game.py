@@ -15,19 +15,27 @@ class GameView(UserModelView):
     column_list = (
         Game.id,
         Game.name,
+        Game.link,
+        Game.lng,
+        Game.lat,
         Game.zipfile,
         "mesh",
     )
     column_labels = {
         "name": "Game name",
+        "link": "Link to the game",
         "zipfile": "Zip file",
     }
     form_extra_fields = {
         "zipfile": form.FileUploadField("Mesh zipfile", base_path="mesh", allowed_extensions=["zip"]),
+        "link": form.FileUploadField("link", base_path="mesh", allowed_extensions=["zip"]),
     }
 
     form_columns = (
         Game.name,
+        Game.link,
+        Game.lng,
+        Game.lat,
         "mesh",
         "zipfile",
     )
