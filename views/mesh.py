@@ -31,28 +31,28 @@ class MeshView(UserModelView):
         Mesh.latitude,
         Mesh.longitude,
         Mesh.name,
-        Mesh.zipfile,
+        # Mesh.zipfile,
         Mesh.status,
         "odmproject_id",
         "odkproject_id",
     )
     column_labels = {
         "name": "Mesh name",
-        "zipfile": "Zip file",
+        # "zipfile": "Zip file",
     }
     # column_descriptions = {
     # }
     form_extra_fields = {
         "odmproject_id": HiddenField("odmproject_id"),
         "odkproject_id": HiddenField("odkproject_id"),
-        "zipfile": form.FileUploadField("Mesh zipfile", base_path="mesh", allowed_extensions=["zip"]),
+        # "zipfile": form.FileUploadField("Mesh zipfile", base_path="mesh", allowed_extensions=["zip"]),
     }
 
     form_columns = (
         Mesh.latitude,
         Mesh.longitude,
         Mesh.name,
-        "zipfile",
+        # "zipfile",
         "odmproject_id",
         "odkproject_id",
     )

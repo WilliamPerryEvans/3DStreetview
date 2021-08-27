@@ -22,11 +22,11 @@ class OdkconfigView(UserModelView):
         Odk.host,
         Odk.port,
         Odk.user,
-        "password",
+        "password_encrypt",
     )
 
     form_extra_fields = {
-        "password": PasswordField("password"),
+        "password_encrypt": PasswordField("Password"),
     }
     # # if you want to edit project list, create, update, or detail view, specify adapted templates below.
     list_template = "odkconfig/list.html"

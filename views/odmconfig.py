@@ -22,10 +22,10 @@ class OdmconfigView(UserModelView):
         Odm.host,
         Odm.port,
         Odm.user,
-        "password",
+        "password_encrypt",
     )
     form_extra_fields = {
-        "password": PasswordField("password")
+        "password_encrypt": PasswordField("Password")
     }
     # if you want to edit project list, create, update, or detail view, specify adapted templates below.
     list_template = "odmconfig/list.html"

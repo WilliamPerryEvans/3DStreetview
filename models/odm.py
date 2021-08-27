@@ -1,8 +1,7 @@
 import os
-import enum
-from sqlalchemy import Integer, ForeignKey, String, Column, Enum, Float, event
+from cryptography.fernet import Fernet
+from sqlalchemy import Integer, ForeignKey, String, Column, event, LargeBinary
 from sqlalchemy_serializer import SerializerMixin
-from sqlalchemy.orm import relationship
 from models.base import Base
 from odk2odm import odm_requests
 
@@ -17,8 +16,8 @@ class Odm(Base, SerializerMixin):
     name = Column(String, nullable=False)
     host = Column(String, nullable=False)
     port = Column(Integer, nullable=False, default=8000)  #
-    user = Column(String, default=None)  # token string to allow login
-    password = Column(String, default=None)  # token string to allow login
+    user = Column(String, default=None)
+    password_encrypt = Column(LargeBinary, default=None)  # encrypted password
     timeout = Column(Integer, default=30)  # timeout in seconds
 
     def __str__(self):
@@ -43,3 +42,25 @@ class Odm(Base, SerializerMixin):
         """
         res = odm_requests.get_token_auth(self.url, self.user, self.password)
         return res.json()['token']
+
+    @property
+    def password(self):
+        """
+        decrypt password
+        :return:
+        """
+        f = Fernet(os.getenv("FERNET_KEY"))  # prepare encryption
+        return f.decrypt(self.password_encrypt).decode()
+
+@event.listens_for(Odm, "before_insert")
+@event.listens_for(Odm, "before_update")
+def receive_before_insert(mapper, connection, target):
+    """
+    Encrypt password before submitting
+    :param mapper:
+    :param connection:
+    :param target: Odm model
+    """
+    f = Fernet(os.getenv("FERNET_KEY"))  # prepare encryption
+    target.password_encrypt = f.encrypt(target.password_encrypt.encode())  # encrypt password with key
+
