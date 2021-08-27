@@ -1,28 +1,39 @@
-import json
-from flask import Blueprint, jsonify, request, flash, url_for, redirect
+from flask import Blueprint, jsonify, request
+from flask_security import login_required, current_user
 from models.mesh import Mesh
-from models.odk import Odk
 from odk2odm import odk_requests
 from odk2odm import odm_requests
 # API components that retrieve or download data from database for use on front end
 mesh_api = Blueprint("mesh_api", __name__)
 
+@mesh_api.before_request
+def before_request():
+    if current_user.is_anonymous:
+        return jsonify("Forbidden"), 401
+
 @mesh_api.route("/api/mesh/", methods=["GET"])
+@login_required
 def get_meshes():
     """
-    API endpoint for getting list of devices and states of devices
+    API endpoint for getting list of meshes available to currently logged in user
 
     :return:
     """
-    meshes = Mesh.query.all()
+    meshes = Mesh.query.filter_by(id=id).filter(Mesh.user_id == current_user.id).all()
     return jsonify([d.to_dict() for d in meshes])
 
 
 @mesh_api.route("/api/mesh/<id>", methods=["POST"])
+@login_required
 def post_attachment(id):
     # retrieve content
     content = request.get_json()
-    mesh = Mesh.query.get(id)
+    try:
+        mesh = Mesh.query.filter_by(id=id).filter(Mesh.user_id == current_user.id).one()
+    except:
+        return jsonify("Access denied"), 403
+
+    # mesh = Mesh.query.get(id)
     odk = mesh.odkproject.odk
     odmproject = mesh.odmproject
     odm = odmproject.odm  # odm server record
@@ -44,5 +55,3 @@ def post_attachment(id):
             return jsonify(res.json())
     except:
         return f"Page {odm.url} does not exist", 404
-
-#
