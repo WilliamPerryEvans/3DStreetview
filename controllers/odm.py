@@ -52,6 +52,40 @@ def get_project(id, project_id):
         return f"Page {odm.url} does not exist", 404
 
 
+@odm_api.route("/api/odm/<id>/projects/<project_id>/tasks/<task_id>", methods=["GET"])
+def get_task(id, project_id, task_id):
+    # retrieve config from database
+    odm = Odm.query.get(id)
+    try:
+        res = odm_requests.get_task(odm.url, odm.token, project_id, task_id)
+        # current_app.logger.info(res.json())
+        return jsonify(res.json())
+    except:
+        return f"Page {odm.url} does not exist", 404
+
+
+@odm_api.route("/api/odm/<id>/projects/<project_id>/tasks/<task_id>/images/download/<filename>", methods=["GET"])
+def get_image(id, project_id, task_id, filename):
+    # retrieve config from database
+    odm = Odm.query.get(id)
+    try:
+        res = odm_requests.get_image(odm.url, odm.token, project_id, task_id, filename)
+        return res
+    except:
+        return f"Page {odm.url} does not exist", 404
+
+
+@odm_api.route("/api/odm/<id>/projects/<project_id>/tasks/<task_id>/images/thumbnail/<filename>", methods=["GET"])
+def get_thumbnail(id, project_id, task_id, filename):
+    # retrieve config from database
+    odm = Odm.query.get(id)
+    try:
+        res = odm_requests.get_image(odm.url, odm.token, project_id, task_id, filename)
+        return res
+    except:
+        return f"Page {odm.url} does not exist", 404
+
+
 @odm_api.route("/api/odm/<id>/projects/", methods=["POST"])
 def post_project(id):
     """
@@ -66,19 +100,6 @@ def post_project(id):
         return jsonify(res.json())
     except:
         return f"Page {odm.url} does not exist", 404
-
-
-@odm_api.route("/api/odm/<id>/projects/<project_id>/tasks/<task_id>", methods=["GET"])
-def get_task(id, project_id, task_id):
-    # retrieve config from database
-    odm = Odm.query.get(id)
-    try:
-        res = odm_requests.get_task(odm.url, odm.token, project_id, task_id)
-        # current_app.logger.info(res.json())
-        return jsonify(res.json())
-    except:
-        return f"Page {odm.url} does not exist", 404
-
 
 
 @odm_api.route("/api/odm/<id>/projects/<project_id>/tasks/", methods=["POST"])
@@ -110,8 +131,31 @@ def post_upload(id, project_id, task_id):
         return f"Page {odm.url} does not exist", 404
 
 
+@odm_api.route("/api/odm/<id>/projects/<project_id>/tasks/<task_id>/cancel/", methods=["POST"])
+def post_cancel(id, project_id, task_id):
+    # retrieve config from database
+    odm = Odm.query.get(id)
+    # retrieve file contents (should only contain "images" but checking for all keys to make sure)
+    try:
+        res = odm_requests.post_cancel(odm.url, odm.token, project_id, task_id)
+        return jsonify(res.json())
+    except:
+        return f"Page {odm.url} does not exist", 404
+
+
+@odm_api.route("/api/odm/<id>/projects/<project_id>/tasks/<task_id>/remove/", methods=["POST"])
+def delete_task(id, project_id, task_id):
+    # retrieve config from database
+    odm = Odm.query.get(id)
+    try:
+        res = odm_requests.delete_task(odm.url, odm.token, project_id, task_id)
+        return jsonify(res.json())
+    except:
+        return f"Page {odm.url} does not exist", 404
+
+
 @odm_api.route("/api/odm/<id>/projects/<project_id>/tasks/<task_id>/commit/", methods=["POST"])
-def commit(id, project_id, task_id):
+def post_commit(id, project_id, task_id):
     # retrieve config from database
     odm = Odm.query.get(id)
     try:
@@ -120,3 +164,13 @@ def commit(id, project_id, task_id):
     except:
         return f"Page {odm.url} does not exist", 404
 
+
+@odm_api.route("/api/odm/<id>/projects/<project_id>/tasks/<task_id>/restart/", methods=["POST"])
+def post_restart(id, project_id, task_id):
+    # retrieve config from database
+    odm = Odm.query.get(id)
+    try:
+        res = odm_requests.post_restart(odm.url, odm.token, project_id, task_id)
+        return jsonify(res.json())
+    except:
+        return f"Page {odm.url} does not exist", 404

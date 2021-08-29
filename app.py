@@ -20,7 +20,7 @@ app.register_blueprint(odm_api)
 app.register_blueprint(odmproject_api)
 app.register_blueprint(odkproject_api)
 
-app.debug = True
+app.debug = False
 app.config["SECRET_KEY"] = "super-secret"
 app.config["SECURITY_REGISTERABLE"] = True
 app.config["SECURITY_SEND_REGISTER_EMAIL"] = False
@@ -55,8 +55,17 @@ def shutdown_session(exception=None):
     # load all expired attributes for the given instance
     db.expire_all()
 
+@app.teardown_request
+def session_clear(exception=None):
+    """
+    Resolve database session issues for the combination of Postgres/Sqlalchemy to rollback database transactions after an exception is thrown.
+    """
+    db.remove()
+    if exception and db.is_active:
+        db.rollback()
+
 
 if __name__ == "__main__":
 
     # Start app
-    app.run(host="0.0.0.0", port=5001)
+    app.run(host="0.0.0.0", port=5002)

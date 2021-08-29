@@ -27,7 +27,7 @@ class OdkconfigView(UserModelView):
     form_extra_fields = {
         "password": PasswordField("password"),
     }
-    # if you want to edit project list, create, update, or detail view, specify adapted templates below.
+    # # if you want to edit project list, create, update, or detail view, specify adapted templates below.
     list_template = "odkconfig/list.html"
     create_template = "odkconfig/create.html"
     edit_template = "odkconfig/edit.html"

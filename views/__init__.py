@@ -27,8 +27,8 @@ admin.add_link(LoginMenuLink(name="Login", category="", url="/login", icon_type=
 # Publicly visible pages.
 admin.add_view(OdkconfigView(session=db, model=Odk, name="ODK configuration", url="odkconfig", category="Servers"))
 admin.add_view(OdmconfigView(session=db, model=Odm, name="ODM configuration", url="odmconfig", category="Servers"))
-admin.add_view(MeshView(session=db, model=Mesh, name="Mesh configuration", url="mesh", category="Meshes"))
-admin.add_view(GameView(session=db, model=Game, name="Play a game", url="game", menu_icon_type="fab", menu_icon_value="fa-unity"))
+admin.add_view(MeshView(session=db, model=Mesh, name="Meshes", url="mesh"))
+admin.add_view(GameView(session=db, model=Game, name="Games", url="game", menu_icon_type="fab", menu_icon_value="fa-unity"))
 admin.add_view(HelpView(name="Help", url="help", menu_icon_type="fas", menu_icon_value="fa-info"))
 
 
