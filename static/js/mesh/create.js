@@ -47,8 +47,8 @@ function get_odm_projects()
         `/api/odm/${odmconfig_id}/projects`,
         function(data) {
             // populate the project dropdown with results
-            console.log(data.results)
-            data.results.forEach(function(x) {
+            console.log(data)
+            data.forEach(function(x) {
                 var option = document.createElement("option");
                 option.text = x.name;
                 option.value = x.id;
