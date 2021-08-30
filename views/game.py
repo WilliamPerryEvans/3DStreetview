@@ -1,17 +1,14 @@
-import json
-from views.general import UserModelView
+from flask_security import current_user
+from views.general import PublicModelView
 from models.game import Game
-from flask import request, redirect, flash
-from flask_admin import form, expose
-from flask_admin.babel import gettext
-from flask_admin.model.template import EndpointLinkRowAction
-from flask_admin.helpers import get_redirect_target
-from flask_admin.model.helpers import get_mdict_item_or_list
-from wtforms.fields import HiddenField
+from flask_admin import form
 
-class GameView(UserModelView):
+class GameView(PublicModelView):
+    @property
+    def can_create(self):
+        return current_user.is_active and current_user.is_authenticated
+
     can_edit = False
-
     column_list = (
         Game.id,
         Game.name,
@@ -21,6 +18,11 @@ class GameView(UserModelView):
     column_labels = {
         "name": "Game name",
         "zipfile": "Zip file",
+    }
+    column_descriptions = {
+        "name": "Descriptive name of the game",
+        "zipfile": "zipfile containing a Unity compatible .data file",
+        "mesh": "Mesh that game belongs to",
     }
     form_extra_fields = {
         "zipfile": form.FileUploadField("Mesh zipfile", base_path="mesh", allowed_extensions=["zip"]),

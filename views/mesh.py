@@ -1,15 +1,15 @@
-import json
-from views.general import UserModelView
-from models.mesh import Mesh
-from models.odm import Odm
-from models.odk import Odk
 from flask import request, redirect, flash
+from flask_security import current_user
 from flask_admin import form, expose
 from flask_admin.babel import gettext
 from flask_admin.model.template import EndpointLinkRowAction
 from flask_admin.helpers import get_redirect_target
 from flask_admin.model.helpers import get_mdict_item_or_list
 from wtforms.fields import HiddenField
+from views.general import UserModelView
+from models.mesh import Mesh
+from models.odm import Odm
+from models.odk import Odk
 
 class MeshView(UserModelView):
     def render(self, template, **kwargs):
@@ -31,28 +31,28 @@ class MeshView(UserModelView):
         Mesh.latitude,
         Mesh.longitude,
         Mesh.name,
-        Mesh.zipfile,
+        # Mesh.zipfile,
         Mesh.status,
         "odmproject_id",
         "odkproject_id",
     )
     column_labels = {
         "name": "Mesh name",
-        "zipfile": "Zip file",
+        # "zipfile": "Zip file",
     }
     # column_descriptions = {
     # }
     form_extra_fields = {
         "odmproject_id": HiddenField("odmproject_id"),
         "odkproject_id": HiddenField("odkproject_id"),
-        "zipfile": form.FileUploadField("Mesh zipfile", base_path="mesh", allowed_extensions=["zip"]),
+        # "zipfile": form.FileUploadField("Mesh zipfile", base_path="mesh", allowed_extensions=["zip"]),
     }
 
     form_columns = (
         Mesh.latitude,
         Mesh.longitude,
         Mesh.name,
-        "zipfile",
+        # "zipfile",
         "odmproject_id",
         "odkproject_id",
     )
@@ -99,3 +99,31 @@ class MeshView(UserModelView):
             get_value=self.get_detail_value,
             return_url=return_url
         )
+
+    def get_query(self):
+        """
+        Only show Odm configs from this user.
+
+        :return:
+        """
+        return super(MeshView, self).get_query().filter(Mesh.user_id == current_user.id)
+
+    def get_one(self, id):
+        """
+        Don't allow to access a specific Odm config if it's not from this user.
+
+        :param id:
+        :return:
+        """
+        return super(MeshView, self).get_query().filter_by(id=id).filter(Mesh.user_id == current_user.id).one()
+
+    def on_model_change(self, form, model, is_created):
+        """
+        Link newly created Odm config to the current logged in user on creation.
+
+        :param form:
+        :param model:
+        :param is_created:
+        """
+        if is_created:
+            model.user_id = current_user.id

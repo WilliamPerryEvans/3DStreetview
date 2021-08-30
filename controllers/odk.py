@@ -1,23 +1,30 @@
 import io
-from flask import Blueprint, jsonify, request, make_response, g
+from flask import Blueprint, jsonify, request, make_response
 from models.odk import Odk
-from models.user import User
 from odk2odm import odk_requests
+from flask_security import login_required, current_user
 
-from flask_httpauth import HTTPBasicAuth
-auth = HTTPBasicAuth()
 # API components that retrieve or download data from database for use on front end
 odk_api = Blueprint("odk_api", __name__)
 
-@auth.verify_password
-def verify_password(username, password):
-    user = User.query.filter_by(email=username).first()
-    if not user or not user.check_password(password):
-        return False
-    g.user = user
-    return True
+def get_odk(id):
+    """
+    Retrieve config with id from database, check if it belongs to user
+    :param id: odm id
+    :return: if the chosen project does not belong to the user, then return a 403 response, else return the Odm model
+    """
+    try:
+        return Odk.query.filter_by(id=id).filter(Odk.user_id == current_user.id).one()
+    except:
+        return jsonify("Access denied"), 403
+
+@odk_api.before_request
+def before_request():
+    if current_user.is_anonymous:
+        return jsonify("Forbidden"), 401
 
 @odk_api.route("/api/odk/<id>/users", methods=["GET"])
+@login_required
 def get_users(id):
     """
     API endpoint for getting list of users on ODK Central server
@@ -25,7 +32,9 @@ def get_users(id):
     :param id: int - ODK server id
     :return: http response
     """
-    odk = Odk.query.get(id)
+    odk = get_odk(id)
+    if not(isinstance(odk, Odk)):
+        return odk
     try:
         res = odk_requests.users(odk.url, (odk.user, odk.password))
         return jsonify(res.json())
@@ -34,6 +43,7 @@ def get_users(id):
 
 
 @odk_api.route("/api/odk/<id>/projects", methods=["GET"])
+@login_required
 def get_projects(id):
     """
     API endpoint for getting list of ODM projects from odm config
@@ -41,7 +51,9 @@ def get_projects(id):
     :param id: int - ODK server id
     :return: http response
     """
-    odk = Odk.query.get(id)
+    odk = get_odk(id)
+    if not(isinstance(odk, Odk)):
+        return odk
     try:
         res = odk_requests.projects(odk.url, (odk.user, odk.password))
         return jsonify(res.json())
@@ -50,6 +62,7 @@ def get_projects(id):
 
 
 @odk_api.route("/api/odk/<id>/projects/<project_id>", methods=["GET"])
+@login_required
 def get_project(id, project_id):
     """
     API endpoint for getting details of project
@@ -58,8 +71,9 @@ def get_project(id, project_id):
     :param project_id: int - ODK remote project id
     :return: http response
     """
-    # retrieve config from database
-    odk = Odk.query.get(id)
+    odk = get_odk(id)
+    if not(isinstance(odk, Odk)):
+        return odk
     try:
         res = odk_requests.project(odk.url, (odk.user, odk.password), project_id)
         return jsonify(res.json())
@@ -68,6 +82,7 @@ def get_project(id, project_id):
 
 
 @odk_api.route("/api/odk/<id>/projects/<project_id>/forms", methods=["GET"])
+@login_required
 def get_forms(id, project_id):
     """
     API endpoint for getting forms of specific project
@@ -76,8 +91,9 @@ def get_forms(id, project_id):
     :param project_id: int - ODK remote project id
     :return: http response
     """
-    # retrieve config from database
-    odk = Odk.query.get(id)
+    odk = get_odk(id)
+    if not(isinstance(odk, Odk)):
+        return odk
     try:
         res = odk_requests.forms(odk.url, (odk.user, odk.password), project_id)
         return jsonify(res.json())
@@ -86,6 +102,7 @@ def get_forms(id, project_id):
 
 
 @odk_api.route("/api/odk/<id>/projects/<project_id>/forms/<form_id>", methods=["GET"])
+@login_required
 def get_form(id, project_id, form_id):
     """
     API endpoint for getting single form of specific project
@@ -95,8 +112,9 @@ def get_form(id, project_id, form_id):
     :param form_id: str - ODK form id
     :return: http response
     """
-    # retrieve config from database
-    odk = Odk.query.get(id)
+    odk = get_odk(id)
+    if not(isinstance(odk, Odk)):
+        return odk
     try:
         res = odk_requests.form(odk.url, (odk.user, odk.password), project_id, form_id)
         return jsonify(res.json())
@@ -105,6 +123,7 @@ def get_form(id, project_id, form_id):
 
 
 @odk_api.route("/api/odk/<id>/projects/<project_id>/app-users", methods=["GET"])
+@login_required
 def get_app_users(id, project_id):
     """
     API endpoint for getting app-users of specific project
@@ -113,8 +132,9 @@ def get_app_users(id, project_id):
     :param project_id: int - ODK remote project id
     :return: http response
     """
-    # retrieve config from database
-    odk = Odk.query.get(id)
+    odk = get_odk(id)
+    if not(isinstance(odk, Odk)):
+        return odk
     try:
         res = odk_requests.app_users(odk.url, (odk.user, odk.password), project_id)
         return jsonify(res.json())
@@ -123,6 +143,7 @@ def get_app_users(id, project_id):
 
 
 @odk_api.route("/api/odk/<id>/projects/<project_id>/forms/<form_id>/submissions", methods=["GET"])
+@login_required
 def get_submissions(id, project_id, form_id):
     """
     API endpoint for getting submissions of given form in given project
@@ -132,8 +153,9 @@ def get_submissions(id, project_id, form_id):
     :param form_id: str - ODK form id
     :return: http response
     """
-    # retrieve config from database
-    odk = Odk.query.get(id)
+    odk = get_odk(id)
+    if not(isinstance(odk, Odk)):
+        return odk
     try:
         res = odk_requests.submissions(odk.url, (odk.user, odk.password), project_id, form_id)
         return jsonify(res.json())
@@ -142,6 +164,7 @@ def get_submissions(id, project_id, form_id):
 
 
 @odk_api.route("/api/odk/<id>/projects/<project_id>/forms/<form_id>/submissions.csv.zip", methods=["GET"])
+@login_required
 def get_csv_submissions(id, project_id, form_id):
     """
     API endpoint for getting submissions of given form in given project in csv format
@@ -151,8 +174,9 @@ def get_csv_submissions(id, project_id, form_id):
     :param form_id: str - ODK form id
     :return: http response
     """
-    # retrieve config from database
-    odk = Odk.query.get(id)
+    odk = get_odk(id)
+    if not(isinstance(odk, Odk)):
+        return odk
     try:
         res = odk_requests.csv_submissions(odk.url, (odk.user, odk.password), project_id, form_id)
         return jsonify(res.json())
@@ -161,6 +185,7 @@ def get_csv_submissions(id, project_id, form_id):
 
 
 @odk_api.route("/api/odk/<id>/projects/<project_id>/forms/<form_id>/submissions/<instance_id>/attachments", methods=["GET"])
+@login_required
 def get_attachments(id, project_id, form_id, instance_id):
     """
     API endpoint for getting list of attachments of single submission of given form in given project
@@ -171,8 +196,9 @@ def get_attachments(id, project_id, form_id, instance_id):
     :param instance_id: int - record number
     :return: http response
     """
-    # retrieve config from database
-    odk = Odk.query.get(id)
+    odk = get_odk(id)
+    if not(isinstance(odk, Odk)):
+        return odk
     try:
         res = odk_requests.attachment_list(odk.url, (odk.user, odk.password), project_id, form_id, instance_id)
         return jsonify(res.json())
@@ -181,6 +207,7 @@ def get_attachments(id, project_id, form_id, instance_id):
 
 
 @odk_api.route("/api/odk/<id>/projects/<project_id>/forms/<form_id>/submissions/<instance_id>/attachments/<filename>", methods=["GET"])
+@login_required
 def get_attachment(id, project_id, form_id, instance_id, filename):
     """
     API endpoint for getting a single attachment file of single submission of given form in given project
@@ -192,8 +219,9 @@ def get_attachment(id, project_id, form_id, instance_id, filename):
     :param filename: str - filename attachment belonging to record
     :return: http response
     """
-    # retrieve config from database
-    odk = Odk.query.get(id)
+    odk = get_odk(id)
+    if not(isinstance(odk, Odk)):
+        return odk
     try:
         res = odk_requests.attachment(odk.url, (odk.user, odk.password), project_id, form_id, instance_id, filename)
         return jsonify(res.json())
@@ -202,6 +230,7 @@ def get_attachment(id, project_id, form_id, instance_id, filename):
 
 
 @odk_api.route("/api/odk/<id>/key/<token>/projects/<project_id>", methods=["GET"])
+@login_required
 def get_qr_code(id, project_id, token):
     """
     API endpoint for getting a  QR code for app-user with specified token, for given project
@@ -211,8 +240,9 @@ def get_qr_code(id, project_id, token):
     :param token: str - app user's token
     :return: http response
     """
-    # retrieve config from database
-    odk = Odk.query.get(id)
+    odk = get_odk(id)
+    if not(isinstance(odk, Odk)):
+        return odk
     general = {
         "form_update_mode": "match_exactly",
         "autosend": "wifi_and_cellular",
@@ -238,6 +268,7 @@ def get_qr_code(id, project_id, token):
 # ================ POST ====================
 
 @odk_api.route("/api/odk/<id>/projects/", methods=["POST"])
+@login_required
 def post_project(id):
     """
     API endpoint for posting a new project on ODK Central server
@@ -245,12 +276,13 @@ def post_project(id):
     :param id: int - ODK server id
     :return: http response
     """
-    # retrieve config from database
     try:
         project_name = request.get_json()["name"]
     except:
         return 'payload did not contain recipe {"name": <PROJECT NAME>}', 400
-    odk = Odk.query.get(id)
+    odk = get_odk(id)
+    if not(isinstance(odk, Odk)):
+        return odk
     try:
         res = odk_requests.create_project(odk.url, (odk.user, odk.password), project_name=project_name)
         return jsonify(res.json())
@@ -259,6 +291,7 @@ def post_project(id):
 
 
 @odk_api.route("/api/odk/<id>/projects/<project_id>/app-users", methods=["POST"])
+@login_required
 def post_app_user(id, project_id):
     """
     API endpoint for posting a new app user on ODK Central server
@@ -272,7 +305,9 @@ def post_app_user(id, project_id):
         app_user_name = request.get_json()["displayName"]
     except:
         return 'payload did not contain recipe {"displayName": <APP USERNAME>}', 400
-    odk = Odk.query.get(id)
+    odk = get_odk(id)
+    if not(isinstance(odk, Odk)):
+        return odk
 
     try:
         res = odk_requests.create_app_user(odk.url, (odk.user, odk.password), project_id, app_user_name=app_user_name)
@@ -282,6 +317,7 @@ def post_app_user(id, project_id):
 
 
 @odk_api.route("/api/odk/<id>/projects/<project_id>/forms/<form_id>/assignments/<role_id>/<actor_id>", methods=["POST"])
+@login_required
 def update_role_app_user(id, project_id, form_id, role_id, actor_id):
     """
     API endpoint for updating role of existing app user in project on ODK Central server
@@ -294,7 +330,9 @@ def update_role_app_user(id, project_id, form_id, role_id, actor_id):
     :return: http response
     """
 
-    odk = Odk.query.get(id)
+    odk = get_odk(id)
+    if not(isinstance(odk, Odk)):
+        return odk
     try:
         res = odk_requests.update_role_app_user(odk.url, (odk.user, odk.password), project_id, form_id, actor_id, role_id)
         return jsonify(res.json())
@@ -302,6 +340,7 @@ def update_role_app_user(id, project_id, form_id, role_id, actor_id):
         return f"Page {odk.url} does not exist", 404
 
 @odk_api.route("/api/odk/<id>/projects/<project_id>/forms", methods=["POST"])
+@login_required
 def post_form(id, project_id):
     """
     API endpoint for posting a new form on ODK Central server
@@ -315,7 +354,9 @@ def post_form(id, project_id):
     files = request.files
     if len(files) != 1:
         return f"Request contained {len(files)} files, where 1 file is expected", 400
-    odk = Odk.query.get(id)
+    odk = get_odk(id)
+    if not(isinstance(odk, Odk)):
+        return odk
     for k in files.keys():
         content = files.get(k)
     if content.content_type != "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
@@ -330,6 +371,7 @@ def post_form(id, project_id):
 # ================ DELETE ====================
 
 @odk_api.route("/api/odk/<id>/projects/<project_id>", methods=["DELETE"])
+@login_required
 def delete_project(id, project_id):
     """
     API endpoint for deleting a project from ODK Central server
@@ -337,9 +379,9 @@ def delete_project(id, project_id):
     :param id: int - ODK server id
     :param project_id: int - ODK remote project id
     """
-    # retrieve config from database
-
-    odk = Odk.query.get(id)
+    odk = get_odk(id)
+    if not(isinstance(odk, Odk)):
+        return odk
     try:
         res = odk_requests.delete_project(odk.url, (odk.user, odk.password), project_id)
         return jsonify(res.json())

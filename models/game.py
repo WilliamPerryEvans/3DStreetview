@@ -1,6 +1,6 @@
 import os
 import enum
-from sqlalchemy import Integer, ForeignKey, String, Column, Enum, Float, event
+from sqlalchemy import Integer, ForeignKey, String, Column, event
 from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.orm import relationship
 from models.base import Base
@@ -12,7 +12,7 @@ class Game(Base, SerializerMixin):
     """
     __tablename__ = "game"
     id = Column(Integer, primary_key=True)
-    mesh_id = Column(Integer, ForeignKey("mesh.id"))
+    mesh_id = Column(Integer, ForeignKey("mesh.id"), nullable=False)
     name = Column(String, nullable=False)
     zipfile = Column(String)  # if a .zip file containing a mesh is supplied, then this is unzipped immediately.
     mesh = relationship("Mesh")

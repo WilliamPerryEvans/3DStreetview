@@ -1,5 +1,5 @@
-import json
 from flask import Blueprint, jsonify, request
+from flask_security import login_required, current_user
 from models.odmproject import Odmproject
 from models import db
 # API components that retrieve or download data from database for use on front end
@@ -17,7 +17,13 @@ schema = {
     "additionalProperties": False
 }
 
+@odmproject_api.before_request
+def before_request():
+    if current_user.is_anonymous:
+        return jsonify("Forbidden"), 401
+
 @odmproject_api.route("/api/odmproject/create_project", methods=["POST"])
+@login_required
 def create_project():
     """
     API endpoint for posting a new ODM project that has a one-to-one relationship with a mesh

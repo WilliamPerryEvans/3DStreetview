@@ -1,6 +1,7 @@
+import os
 from flask import Flask, redirect, jsonify, url_for
 from flask_admin import helpers as admin_helpers
-from flask_security import Security, login_required, SQLAlchemySessionUserDatastore
+from flask_security import Security, SQLAlchemySessionUserDatastore
 from werkzeug import serving
 import re
 from models import db
@@ -21,10 +22,11 @@ app.register_blueprint(odmproject_api)
 app.register_blueprint(odkproject_api)
 
 app.debug = False
-app.config["SECRET_KEY"] = "super-secret"
+app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 app.config["SECURITY_REGISTERABLE"] = True
 app.config["SECURITY_SEND_REGISTER_EMAIL"] = False
-app.config["SECURITY_PASSWORD_SALT"] = "salt"
+app.config["SECURITY_PASSWORD_SALT"] = os.getenv("SECURITY_PASSWORD_SALT")
+app.config["FERNET_KEY"] = os.getenv("FERNET_KEY")
 
 # Setup Flask-Security
 user_datastore = SQLAlchemySessionUserDatastore(db, User, Role)

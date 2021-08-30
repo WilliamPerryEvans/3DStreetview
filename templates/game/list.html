@@ -60,10 +60,10 @@
 
         {% for row in data %}
             var marker = L.marker([{{ get_value(row.mesh, 'latitude') }}, {{ get_value(row.mesh, 'longitude') }}], {id:
-            {{ get_value(row.mesh, 'id') }} });
+            {{ get_value(row, 'id') }} });
             toolTip = "<dl>" +
-                "<dt>ID: {{ get_value(row.mesh, 'id') }}</dt>" +
-                "<dt>Name: {{ get_value(row.mesh, 'name') }} </dt>" +
+                "<dt>ID: {{ get_value(row, 'id') }}</dt>" +
+                "<dt>Name: {{ get_value(row, 'name') }} </dt>" +
                 "</dl>"
             marker.bindTooltip(toolTip);
             marker.on("click", function (e) {

@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify, request
+from flask_security import login_required, current_user
 from models.odkproject import Odkproject
 from models import db
 # API components that retrieve or download data from database for use on front end
@@ -15,7 +16,13 @@ schema = {
     "additionalProperties": False
 }
 
+@odkproject_api.before_request
+def before_request():
+    if current_user.is_anonymous:
+        return jsonify("Forbidden"), 401
+
 @odkproject_api.route("/api/odkproject/create_project", methods=["POST"])
+@login_required
 def create_project():
     """
     API endpoint for posting a new ODK project that has a one-to-one relationship with a mesh
@@ -24,11 +31,11 @@ def create_project():
     """
     content = request.get_json(silent=True)
     validate(instance=content, schema=schema)
-    odm_project = Odkproject(**content)
-    db.add(odm_project)
+    odk_project = Odkproject(**content)
+    db.add(odk_project)
     db.commit()
-    db.refresh(odm_project)
-    return jsonify(odm_project.to_dict())
+    db.refresh(odk_project)
+    return jsonify(odk_project.to_dict())
 
 @odkproject_api.errorhandler(ValidationError)
 @odkproject_api.errorhandler(ValueError)
