@@ -8,6 +8,21 @@ echo Installing posgresql
 sudo apt install -y postgresql postgresql-contrib libpq-dev
 sudo apt install -y python3-pip
 
+echo Installing redis-server
+sudo apt install -y redis-server
+# make sure that redis is supervised by systemd
+sudo sed -i 's/supervised no/supervised systemd/g' /etc/redis/redis.conf
+sudo systemctl restart redis.service
+sudo systemctl restart redis
+
+# make redis password secure
+export REDIS_PASSWORD=`openssl rand 60 | openssl base64 -A`
+sed -i "/REDIS_PASSWORD=/c\REDIS_PASSWORD=${REDIS_PASSWORD}" ./.env
+sudo sed -i "/# requirepass /c\requirepass ${REDIS_PASSWORD}" /etc/redis/redis.conf
+
+# possibly renaming of redis commands can be added for additional security after development has been done
+# see https://www.digitalocean.com/community/tutorials/how-to-install-and-secure-redis-on-ubuntu-20-04
+
 echo installing nginx
 if ! type "nginx"; then
     sudo apt install -y nginx
