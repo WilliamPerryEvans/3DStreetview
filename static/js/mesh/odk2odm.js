@@ -111,10 +111,12 @@ function get_odm_task()
     if (task_id != "null") {
         document.getElementById("task_create_button").disabled = true;
         document.getElementById("task_delete_button").disabled = true;
+        document.getElementById("odm_download").disabled = true;
         // clear current tasks in dropdown
         $.getJSON(
             `/api/odm/${odmconfig_id}/projects/${odmproject_id}/tasks/${task_id}`,
             function(data) {
+                console.log(data);
                 task_data = data;  // globalize current task data
                 // change content of status texts and bars
                 $('#task_id span').text(`Task: ${task_id}`);
@@ -142,6 +144,26 @@ function get_odm_task()
                 } else {
                     $("#odm_commit").html("<i class=\"fas fa-play-circle\"></i> Launch task")
                 }
+                if (data.available_assets.length > 0) {
+                    var assets_select = document.getElementById("odm_assets");
+                    // remove any children
+                    assets_select.innerHTML = "";
+                    // add children
+                    data.available_assets.forEach(function(x) {
+                        option = document.createElement("a");
+                        option.className = "dropdown-item";
+                        option.text = `${x}`;
+                        option.href = `/api/odm/${odmconfig_id}/projects/${odmproject_id}/tasks/${task_id}/download/${x}`;
+                        option.value = x;
+                        assets_select.append(option);
+                    });
+                    // enable the button, triggering this dropdown menu
+                    document.getElementById("odm_download").disabled = false;
+                    // button needs one click before dropdown works
+                    $("#odm_download").click();
+
+                }
+
             }
         );
         flashMessage([{"type": "success", "message": `Retrieved task ${task_id}`}]);
@@ -387,6 +409,6 @@ function buttons () {
 function mesh_to_game () {
     alert("This functionality is not yet implemented. If you want to retrieve the mesh, please go to the configured ODM server and project and download it from there.")
 }
-$( document ).ready(function() {
-    setInterval(get_odm_task, 3000);
-});
+//$( document ).ready(function() {
+//    setInterval(get_odm_task, 3000);
+//});

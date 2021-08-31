@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, Response, make_response
 from flask_security import current_user, login_required
 from models.odm import Odm
 from odk2odm import odm_requests
@@ -98,6 +98,19 @@ def get_image(id, project_id, task_id, filename):
     try:
         res = odm_requests.get_image(odm.url, odm.token, project_id, task_id, filename)
         return res
+    except:
+        return f"Page {odm.url} does not exist", 404
+
+@odm_api.route("/api/odm/<id>/projects/<project_id>/tasks/<task_id>/download/<asset>", methods=["GET"])
+@login_required
+def get_asset(id, project_id, task_id, asset):
+    odm = get_odm(id)
+    if not (isinstance(odm, Odm)):
+        return odm
+    try:
+        res = odm_requests.get_asset(odm.url, odm.token, project_id, task_id, asset)
+
+        return (res.content, res.status_code, res.headers.items())
     except:
         return f"Page {odm.url} does not exist", 404
 
