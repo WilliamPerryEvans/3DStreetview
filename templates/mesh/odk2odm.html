@@ -17,7 +17,10 @@
 <div class="row">
     <div class="container">
         <h2>Mesh project '{{ model.name }}'</h2><span>Monitor ODK submissions, transfer submissions to an ODM task in
-        your ODM project, launch ODM tasks and monitor progress, transfer meshes to a game project.
+        your ODM project, launch ODM tasks and monitor progress, transfer meshes to a game project. Currently, direct transfer to game meshes is not yet supported.
+        Instead, please download your mesh from the Assets after creation, and go to <a href="https://github.com/localdevices/3DStreetView-game/blob/main/docs/build_unity_project.md">this</a>
+        link to prepare a Unity game with your mesh. Once that is done, zip your game or just the mesh file (extension .data), and upload it in this dashboard
+        in the <a href="/dashboard/game">Game project</a> menu. This step will be automated at a later stage.
         </span><br><br>
     </div>
 </div>
@@ -66,23 +69,23 @@
 
 <hr>
 
-<div class="row">
-        <div class="col border-right">
-            <div class="container">
-                <h5>ODM task status</h5>
-                <span>Create a new task, upload new photos, launch a new task, check the status of a launched task.</span><br><br>
-                <span>ODM server location: <a href="{{ model.odmproject.odm.url }}">{{ model.odmproject.odm.url }}</a> </span><br>
-                <span>ODK project name: {{ model.odmproject.project['name'] }} </span><br><br>
-                <div class="form-group ">
-                    <label for="odm_task" class="control-label">Select ODM task</label>
-                    <select class="form-control" data-role="select2" id="odm_task" onchange="get_odm_task()" name="odm_task" required>
-                    </select>
-                    <div class="btn-toolbar">
-                        <button type="button" id="task_create_button" disabled="true" data-toggle="modal" data-target="#newOdmTask" class="btn btn-primary mt-2 mx-2">New task</button>
-                        <button type="button" id="task_delete_button" disabled="true" onclick="delete_odm_task()" class="btn btn-danger mt-2 mx-2">Delete task</button>
-                    </div>
+<div class="container">
+    <div class="row">
+        <div class="col-4 border-right">
+            <h5>ODM task status</h5>
+            <span>Create a new task, upload new photos, launch a new task, check the status of a launched task.</span><br><br>
+            <span>ODM server location: <a href="{{ model.odmproject.odm.url }}">{{ model.odmproject.odm.url }}</a> </span><br>
+            <span>ODK project name: {{ model.odmproject.project['name'] }} </span><br><br>
+            <div class="form-group ">
+                <label for="odm_task" class="control-label">Select ODM task</label>
+                <select class="form-control" data-role="select2" id="odm_task" onchange="get_odm_task()" name="odm_task" required>
+                </select>
+                <div class="btn-toolbar">
+                    <button type="button" id="task_create_button" disabled="true" data-toggle="modal" data-target="#newOdmTask" class="btn btn-primary mt-2 mx-2">New task</button>
+                    <button type="button" id="task_delete_button" disabled="true" onclick="delete_odm_task()" class="btn btn-danger mt-2 mx-2">Delete task</button>
                 </div>
             </div>
+<!--            </div>-->
         </div>
         <div class="col">
             <div class="container">
@@ -111,10 +114,13 @@
                 <div class="row">
                     <div class="col">
                         <div class="btn-group" role="group" aria-label="Basic example">
-                            <button type="button" id="odm_download" class="btn btn-primary mx-1" onclick="mesh_to_game()" disabled><i class="fas fa-cloud-download-alt"></i> Transfer mesh to game</button>
-                            <button type="button" id="odm_commit" class="btn btn-primary mx-1" onclick="commit_odm_task()" disabled><i class="fas fa-play-circle"></i> Launch task</button>
-                            <button type="button" id="odm_cancel" class="btn btn-primary mx-1" onclick="cancel_odm_task()" disabled><i class="fas fa-stop-circle"></i> Cancel task</button>
+                            <button type="button" id="odm_commit" class="btn btn-primary mx-1" onclick="commit_odm_task()" disabled><i class="fas fa-play-circle"></i> Launch</button>
+                            <button type="button" id="odm_cancel" class="btn btn-primary mx-1" onclick="cancel_odm_task()" disabled><i class="fas fa-stop-circle"></i> Cancel</button>
                             <button type="button" id="odm_delete" class="btn btn-danger" disabled><i class="fas fa-trash-alt"></i> Delete assets</button>
+                            <button type="button" id="odm_game" class="btn btn-primary mx-1" onclick="mesh_to_game()" disabled><i class="fas fa-cloud-download-alt"></i> Make game</button>
+                            <button type="button" id="odm_download" class="btn btn-primary mx-1 dropdown-toggle" data-toggle="dropdown" aria-expanded="false" disabled><i class="fas fa-cloud-download-alt"></i> Assets</button>
+                            <div class="dropdown-menu" id="odm_assets">
+                            </div>
                         </div>
                     </div>
                 </div>
