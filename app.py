@@ -2,43 +2,53 @@ import os
 from flask import Flask, redirect, jsonify, url_for
 from flask_admin import helpers as admin_helpers
 from flask_security import Security, SQLAlchemySessionUserDatastore
-from werkzeug import serving
-import re
+from celery import Celery
+
 from models import db
 from models.user import User, Role
-from controllers import mesh_api
-from controllers import odk_api
-from controllers import odm_api
-from controllers import odmproject_api
-from controllers import odkproject_api
 from views import admin
 
 # Create flask app
-app = Flask(__name__, template_folder="templates")
-app.register_blueprint(mesh_api)
-app.register_blueprint(odk_api)
-app.register_blueprint(odm_api)
-app.register_blueprint(odmproject_api)
-app.register_blueprint(odkproject_api)
-
-app.debug = False
-app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
-app.config["SECURITY_REGISTERABLE"] = True
-app.config["SECURITY_SEND_REGISTER_EMAIL"] = False
-app.config["SECURITY_PASSWORD_SALT"] = os.getenv("SECURITY_PASSWORD_SALT")
-app.config["FERNET_KEY"] = os.getenv("FERNET_KEY")
-
-# Setup Flask-Security
 user_datastore = SQLAlchemySessionUserDatastore(db, User, Role)
+celery = Celery(__name__, broker=os.getenv("CELERY_URL"))
+
+def create_app(config_name):
+    app = Flask(config_name, template_folder="templates")
+    app.debug = False
+    app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
+    app.config["SECURITY_REGISTERABLE"] = True
+    app.config["SECURITY_SEND_REGISTER_EMAIL"] = False
+    app.config["SECURITY_PASSWORD_SALT"] = os.getenv("SECURITY_PASSWORD_SALT")
+    app.config["FERNET_KEY"] = os.getenv("FERNET_KEY")
+    app.config["CELERY_BROKER_URL"] = os.getenv("CELERY_URL")
+    app.config["CELERY_RESULT_BACKEND"] = os.getenv("CELERY_URL")
+    # after the blueprints are added, also configure celery
+    admin.init_app(app)
+    celery.conf.update(app.config)
+    # Setup Flask-Security
+    # Create admin interface
+    from controllers import odk_api
+    from controllers import odm_api
+    from controllers import odmproject_api
+    from controllers import odkproject_api
+    from controllers import mesh_api
+    app.register_blueprint(mesh_api)
+    app.register_blueprint(odk_api)
+    app.register_blueprint(odm_api)
+    app.register_blueprint(odmproject_api)
+    app.register_blueprint(odkproject_api)
+    return app
+
+
+app = create_app(__name__)
 security = Security(app, user_datastore)
+
 
 @app.route("/")
 def index():
     return redirect("/dashboard", code=302)
 
 
-# Create admin interface
-admin.init_app(app)
 
 # Provide necessary vars to flask-admin views.
 @security.context_processor
@@ -70,4 +80,4 @@ def session_clear(exception=None):
 if __name__ == "__main__":
 
     # Start app
-    app.run(host="0.0.0.0", port=5002)
+    app.run(host="0.0.0.0", port=5000)

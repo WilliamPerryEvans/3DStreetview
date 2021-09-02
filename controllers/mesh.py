@@ -1,10 +1,20 @@
+import time
 from flask import Blueprint, jsonify, request
 from flask_security import login_required, current_user
 from models.mesh import Mesh
 from odk2odm import odk_requests
 from odk2odm import odm_requests
 # API components that retrieve or download data from database for use on front end
+
 mesh_api = Blueprint("mesh_api", __name__)
+
+from app import celery
+
+@celery.task(bind=True)
+def odk2odm():
+    time.sleep(10)
+
+
 
 @mesh_api.before_request
 def before_request():
