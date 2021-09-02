@@ -12,6 +12,12 @@ class OdmconfigView(UserModelView):
         Odm.port,
         Odm.user,
     )
+    column_details_list = (
+        Odm.name,
+        Odm.host,
+        Odm.port,
+        Odm.user,
+    )
 
     column_labels = {
     }

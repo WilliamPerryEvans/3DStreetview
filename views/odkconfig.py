@@ -12,7 +12,13 @@ class OdkconfigView(UserModelView):
         Odk.port,
         Odk.user,
     )
+    column_details_list = (
+        Odk.name,
+        Odk.host,
+        Odk.port,
+        Odk.user,
 
+    )
     column_labels = {
     }
     column_descriptions = {
