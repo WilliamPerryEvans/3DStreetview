@@ -21,12 +21,12 @@ def create_app(config_name):
     app.config["SECURITY_PASSWORD_SALT"] = os.getenv("SECURITY_PASSWORD_SALT")
     app.config["FERNET_KEY"] = os.getenv("FERNET_KEY")
     app.config["CELERY_BROKER_URL"] = os.getenv("CELERY_URL")
-    app.config["CELERY_RESULT_BACKEND"] = os.getenv("CELERY_URL")
-    # after the blueprints are added, also configure celery
-    admin.init_app(app)
-    celery.conf.update(app.config)
-    # Setup Flask-Security
+    # app.config["CELERY_RESULT_BACKEND"] = os.getenv("CELERY_URL")
+    app.config["result_backend"] = os.getenv("CELERY_URL")
     # Create admin interface
+    admin.init_app(app)
+    # after the blueprints are added, also configure celery
+    celery.conf.update(app.config)
     from controllers import odk_api
     from controllers import odm_api
     from controllers import odmproject_api
@@ -41,6 +41,7 @@ def create_app(config_name):
 
 
 app = create_app(__name__)
+# Setup Flask-Security
 security = Security(app, user_datastore)
 
 
