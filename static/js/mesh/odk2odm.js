@@ -3,7 +3,8 @@ const odkproject_id = $('input#odkproject_id').val();
 const odmconfig_id = $('input#odm_config').val();
 const odmproject_id = $('input#odmproject_id').val();
 const id = $('input#mesh_id').val();
-var progress_title = "Upload progress";
+const current_task = $('input#current_task').val();
+var upload_title = "Upload progress";
 var odk2odm_total = 0;
 var odk2odm_progress = 0;  // percentage of upload progress
 var task_data = {};
@@ -103,7 +104,7 @@ function get_odm_tasks()
     });
 }
 
-function get_odm_task()
+function update_odm_task()
 {
     // get current id of mesh
     var task_select = document.getElementById("odm_task");
@@ -122,10 +123,6 @@ function get_odm_task()
                 $('#task_id span').text(`Task: ${task_id}`);
                 $('#images_count span').text(` ${data.images_count}`);
                 $('#processing_time span').text(` ${millisToMinutesAndSeconds(data.processing_time)}`);
-                $('#progress_title').text(progress_title);
-                prog = document.getElementById('upload_progress')
-                prog.style = `width: ${odk2odm_progress/odk2odm_total*100}%`
-                prog.textContent = `${odk2odm_progress}/${odk2odm_total}`;
                 prog = document.getElementById('running_progress')
                 prog.style = `width: ${data.running_progress*100}%`
                 prog.textContent = `${Math.round(data.running_progress*100)} %`;
@@ -139,29 +136,32 @@ function get_odm_task()
                     document.getElementById('odm_cancel').disabled = false
                     document.getElementById('odm_delete').disabled = false
                 }
-                if (data.status == 10 || data.status == 20){
-                    $("#odm_commit").html("<i class=\"fas fa-cog fa-spin\"></i> Task running")
-                } else {
+                if (data.status != 10 && data.status != 20){
                     $("#odm_commit").html("<i class=\"fas fa-play-circle\"></i> Launch task")
-                }
-                if (data.available_assets.length > 0) {
-                    var assets_select = document.getElementById("odm_assets");
-                    // remove any children
-                    assets_select.innerHTML = "";
-                    // add children
-                    data.available_assets.forEach(function(x) {
-                        option = document.createElement("a");
-                        option.className = "dropdown-item";
-                        option.text = `${x}`;
-                        option.href = `/api/odm/${odmconfig_id}/projects/${odmproject_id}/tasks/${task_id}/download/${x}`;
-                        option.value = x;
-                        assets_select.append(option);
-                    });
-                    // enable the button, triggering this dropdown menu
-                    document.getElementById("odm_download").disabled = false;
-                    // button needs one click before dropdown works
-                    $("#odm_download").click();
+                    if (data.available_assets.length > 0) {
+                        var assets_select = document.getElementById("odm_assets");
+                        // remove any children
+                        assets_select.innerHTML = "";
+                        // add children
+                        data.available_assets.forEach(function(x) {
+                            option = document.createElement("a");
+                            option.className = "dropdown-item";
+                            option.text = `${x}`;
+                            option.href = `/api/odm/${odmconfig_id}/projects/${odmproject_id}/tasks/${task_id}/download/${x}`;
+                            option.value = x;
+                            assets_select.append(option);
+                        });
+                        // enable the button, triggering this dropdown menu
+                        document.getElementById("odm_download").disabled = false;
+                        // button needs one click before dropdown works
+                        $("#odm_download").click();
 
+                    }
+                } else {
+                    $("#odm_commit").html("<i class=\"fas fa-cog fa-spin\"></i> Task running")
+                    setTimeout(function() {
+                        update_odm_task();
+                    }, 2000);
                 }
 
             }
@@ -240,7 +240,7 @@ function commit_odm_task() {
     } else {
         url = `/api/odm/${odmconfig_id}/projects/${odmproject_id}/tasks/${task_id}/commit/`
     }
-    console.log(url)
+    console.log(url);
     $.ajax({
         type: 'POST',
         url: url,
@@ -249,10 +249,8 @@ function commit_odm_task() {
         // Submit parent form on success.
         success: function(data) {
             console.log(data);
-            get_odm_task();
+            setTimeout(update_odm_task(), 2000);
             flashMessage([{"type": "success", "message": "ODM task commited"}]);
-//            document.getElementById("task_delete_button").disabled = true;
-//            document.getElementById("task_cancel_button").disabled = false;
         },
         // Enable save button again.
         error: function() { flashMessage([{"type": "danger", "message": "Not able to commit ODM task"}]) }
@@ -276,7 +274,7 @@ function cancel_odm_task() {
         success: function(data) {
             console.log(data);
             // refresh project list
-            get_odm_task();
+            update_odm_task();
             flashMessage([{"type": "success", "message": "ODM task commited"}]);
 //            document.getElementById("task_delete_button").disabled = false;
         },
@@ -296,10 +294,11 @@ function getodk_postodm(all=false) {
         // get all items
         submissions = $('#submissions').bootstrapTable('getData');
     }
-    // first get all attachment we want
-    attachments = submissions.map(get_attachments);
-    no_attachments = attachments.map(a => a.length);
-    odk2odm_total = no_attachments.reduce((a, b) => a + b, 0)  // sum up all lengths of attachments to know total no. photos
+    console.log(submissions);
+//    // first get all attachment we want
+//    attachments = submissions.map(get_attachments);
+//    no_attachments = attachments.map(a => a.length);
+//    odk2odm_total = no_attachments.reduce((a, b) => a + b, 0)  // sum up all lengths of attachments to know total no. photos
     // get a list (per survey) of lists of all attachments in each survey
     // check if an ODM task is selected, and has the right status if not return msg
     var task_select = document.getElementById("odm_task");
@@ -314,7 +313,36 @@ function getodk_postodm(all=false) {
                     // check if status is open to photos
                     if (data.status != 10 && data.status != 20) { // not queued or running
                         // push all photos to odm server
-                        submissions.map(t => transfer(t, ));
+                        $.ajax({
+                            type: 'POST',
+                            url: `/api/mesh/odk2odm/${id}`,
+                            data: JSON.stringify({
+                                "submissions": submissions,
+                                "odm_task": document.getElementById("odm_task").value,
+                                "odk_formId": document.getElementById('odk_form').value
+                            }),
+                            contentType: "application/json",
+                            dataType: 'json',
+                            statusCode: {
+                                202: function(msg) {
+                                    console.log(msg);
+                                    setTimeout(update_upload(), 2000);
+                                }
+                                // refresh project list
+//                                odk2odm_progress += 1;
+//                                update_odm_task();
+//                                upload_title = `${data}`;
+
+                            },
+                            // Enable save button again.
+                            error: function(xhr, data) {
+                                console.log(xhr);
+                                if (xhr.status == 429) {
+                                    flashMessage([{"type": "warning", "message": `${xhr.responseText}`}])
+                                }
+                            }
+                        });
+//                        submissions.map(t => transfer(t, ));
                     }
                 } else {
                     flashMessage([{"type": "danger", "message": "ODM server is online, but cannot find chosen task."}]);
@@ -332,6 +360,52 @@ function getodk_postodm(all=false) {
 //    submit(data)
 
 }
+
+function update_upload() {
+    // refresh odm task and all buttons
+    // retrieve mesh from database
+    url = `/api/mesh/${id}`;
+    $('#upload_title').text("Upload progress");
+    prog = document.getElementById('upload_progress')
+    prog.style = `width: 0%`;
+    prog.textContent = ``;
+    $.getJSON(url,
+        function(mesh) {
+            url = `/api/status/${mesh.current_task}`
+            $.getJSON(
+                url,
+                function(task) {
+                    $('#upload_title').text(`${task.status}`);
+                    if (task["state"] == "SUCCESS"){
+                        prog.style = `width: 100%`;
+                        prog.textContent = `Upload completed`;
+                        update_odm_task();
+
+
+                    } else if (task["state"] == "PENDING") {
+                        console.log("Upload is pending")
+                        prog.style = `width: 0%`;
+                        prog.textContent = `Uploading pending`;
+                        $('#upload_title').text("Upload pending...");
+                    } else {
+                        // upload is busy, make sure that no jobs can be started, stopped or deleted
+                        document.getElementById('odm_commit').disabled = true
+                        document.getElementById('odm_cancel').disabled = true
+                        document.getElementById('odm_delete').disabled = true
+                        prog.style = `width: ${task.current/task.total*100}%`
+                        prog.textContent = `${task.current}/${task.total}`;
+                        setTimeout(function() {
+                            // keep on refreshing until upload's done
+                            update_upload();
+                        }, 2000);
+                    }
+                }
+            );
+        }
+    );
+}
+
+
 function transfer(submission){
     attachments = get_attachments(submission);
     formId = document.getElementById('odk_form').value;
@@ -366,15 +440,15 @@ function file_transfer(attachment, instanceId){
             dataType: 'json',
             // Submit parent form on success.
             success: function(data) {
-                console.log(data);
                 // refresh project list
                 odk2odm_progress += 1;
-                get_odm_task();
-                progress_title = `${data}`;
+                update_odm_task();
+                upload_title = `${data}`;
 
             },
             // Enable save button again.
-            error: function() {
+            error: function(data, xhr) {
+                console.log(xhr);
                 flashMessage([{"type": "danger", "message": `Could not upload file ${attachment.name}`}])
             }
         });
@@ -409,6 +483,9 @@ function buttons () {
 function mesh_to_game () {
     alert("This functionality is not yet implemented. If you want to retrieve the mesh, please go to the configured ODM server and project and download it from there.")
 }
-//$( document ).ready(function() {
-//    setInterval(get_odm_task, 3000);
-//});
+
+$( document ).ready(function() {
+    update_upload();
+    update_odm_task();
+//    setInterval(update_odm_task, 3000);
+});
