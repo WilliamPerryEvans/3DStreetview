@@ -16,6 +16,7 @@ $(document).ready(function () {
 });
 
 function get_odk_forms() {
+    // retrieve all odk forms in selected odk project
     var form_select = document.getElementById("odk_form");
     removeOptions(form_select);
     addDisabledOption(form_select);
@@ -61,18 +62,9 @@ function get_submissions() {
     });
 }
 
-function get_attachments(submission){
-    console.log(url);
-    res = $.getJSON({
-        url: `${url}/${submission.instanceId}/attachments`,
-        async: false
-    });
-    return res.responseJSON
-}
-
-
-function get_odm_tasks()
-{    // get current id of mesh
+function get_odm_tasks() {
+    // retrieves all odm tasks under current odm project
+    // get current id of mesh
     document.getElementById("task_create_button").disabled = true;
     document.getElementById("task_delete_button").disabled = true;
     var task_select = document.getElementById("odm_task");
@@ -104,8 +96,8 @@ function get_odm_tasks()
     });
 }
 
-function update_odm_task()
-{
+function update_odm_task() {
+    // get all information on selected odm task and update all information in html according to status
     // get current id of mesh
     var task_select = document.getElementById("odm_task");
     const task_id = task_select.value;
@@ -163,7 +155,6 @@ function update_odm_task()
                         update_odm_task();
                     }, 2000);
                 }
-
             }
         );
         flashMessage([{"type": "success", "message": `Retrieved task ${task_id}`}]);
@@ -181,7 +172,6 @@ function delete_odm_task() {
         $.ajax({
             type: 'POST',
             url: `/api/odm/${odmconfig_id}/projects/${odmproject_id}/tasks/${task_id}/remove/`,
-    //        data: JSON.stringify(content),
             contentType: "application/json",
             dataType: 'json',
             // Submit parent form on success.
@@ -199,6 +189,7 @@ function delete_odm_task() {
 }
 
 function create_odm_task() {
+    // create a new odm task in selected odm project via a HTML modal
     // get current id of mesh
     const task_name = $('input#odm_task_name').val();
     content = {
@@ -227,7 +218,7 @@ function create_odm_task() {
 }
 
 function commit_odm_task() {
-    // Commit odm task
+    // Commit odm task so that it is processed
     document.getElementById('odm_download').disabled = true
     document.getElementById('odm_commit').disabled = true
     document.getElementById('odm_cancel').disabled = true
@@ -249,7 +240,9 @@ function commit_odm_task() {
         // Submit parent form on success.
         success: function(data) {
             console.log(data);
-            setTimeout(update_odm_task(), 2000);
+            setTimeout(function() {
+                update_odm_task();
+                }, 2000);
             flashMessage([{"type": "success", "message": "ODM task commited"}]);
         },
         // Enable save button again.
@@ -258,7 +251,7 @@ function commit_odm_task() {
 }
 
 function cancel_odm_task() {
-    // Commit odm task
+    // Cancel currently selected and running odm task (only available when running)
     document.getElementById('odm_download').disabled = true
     document.getElementById('odm_commit').disabled = true
     document.getElementById('odm_cancel').disabled = true
@@ -276,7 +269,6 @@ function cancel_odm_task() {
             // refresh project list
             update_odm_task();
             flashMessage([{"type": "success", "message": "ODM task commited"}]);
-//            document.getElementById("task_delete_button").disabled = false;
         },
         // Enable save button again.
         error: function() { flashMessage([{"type": "danger", "message": "Not able to commit ODM task"}]) }
@@ -284,8 +276,9 @@ function cancel_odm_task() {
 }
 
 function getodk_postodm(all=false) {
+    // posts a list of odk submissions from selected odk project and form to back end worker
+    // back-end worker then transfers selected submissions to the selected odm server-project-task
     odk2odm_progress = 0;
-//    alert('This button will allow you to transfer. Not implemented yet.')
     // get the selected items
     if (all==false) {
         // only get selected
@@ -295,11 +288,6 @@ function getodk_postodm(all=false) {
         submissions = $('#submissions').bootstrapTable('getData');
     }
     console.log(submissions);
-//    // first get all attachment we want
-//    attachments = submissions.map(get_attachments);
-//    no_attachments = attachments.map(a => a.length);
-//    odk2odm_total = no_attachments.reduce((a, b) => a + b, 0)  // sum up all lengths of attachments to know total no. photos
-    // get a list (per survey) of lists of all attachments in each survey
     // check if an ODM task is selected, and has the right status if not return msg
     var task_select = document.getElementById("odm_task");
     const task_id = task_select.value;
@@ -328,10 +316,6 @@ function getodk_postodm(all=false) {
                                     console.log(msg);
                                     setTimeout(update_upload(), 2000);
                                 }
-                                // refresh project list
-//                                odk2odm_progress += 1;
-//                                update_odm_task();
-//                                upload_title = `${data}`;
 
                             },
                             // Enable save button again.
@@ -342,7 +326,6 @@ function getodk_postodm(all=false) {
                                 }
                             }
                         });
-//                        submissions.map(t => transfer(t, ));
                     }
                 } else {
                     flashMessage([{"type": "danger", "message": "ODM server is online, but cannot find chosen task."}]);
@@ -356,13 +339,10 @@ function getodk_postodm(all=false) {
     } else {
         flashMessage([{"type": "danger", "message": "No ODM task selected. Please select an ODM task or create a new one for uploads."}]);
     }
-//    if
-//    submit(data)
-
 }
 
 function update_upload() {
-    // refresh odm task and all buttons
+    // retrieve status of back-end worker upload, the last submitted job is the default selected job to query status from
     // retrieve mesh from database
     url = `/api/mesh/${id}`;
     $('#upload_title').text("Upload progress");
@@ -375,7 +355,7 @@ function update_upload() {
             $.getJSON(
                 url,
                 function(task) {
-                    $('#upload_title').text(`${task.status}`);
+                    $('#upload_title').text(`${task.state}: ${task.status}`);
                     if (task["state"] == "SUCCESS"){
                         prog.style = `width: 100%`;
                         prog.textContent = `Upload completed`;
@@ -387,6 +367,10 @@ function update_upload() {
                         prog.style = `width: 0%`;
                         prog.textContent = `Uploading pending`;
                         $('#upload_title').text("Upload pending...");
+                        setTimeout(function() {
+                            // keep on refreshing until upload's done
+                            update_upload();
+                        }, 2000);
                     } else {
                         // upload is busy, make sure that no jobs can be started, stopped or deleted
                         document.getElementById('odm_commit').disabled = true
@@ -405,57 +389,9 @@ function update_upload() {
     );
 }
 
-
-function transfer(submission){
-    attachments = get_attachments(submission);
-    formId = document.getElementById('odk_form').value;
-    attachments.map(x => file_transfer(x, instanceId=submission.instanceId)); // transfer all files per submission
-    // TODO: check if attachments are already present on odm side (by getting a thumbnail)
-    // if not, transfer file to odm
-    // finalize by checking if ODM task
-
-}
-
-function file_transfer(attachment, instanceId){
-    if (attachment.exists) {
-        // prepare kwargs for retrieval of attachment from odk
-        odk_kwargs = {
-            projectId: odkproject_id,
-            formId: document.getElementById('odk_form').value,
-            instanceId: instanceId,
-            filename: attachment.name
-        }
-        odm_kwargs = {
-            task_id: document.getElementById("odm_task").value
-        }
-        content = {
-            odk_kwargs: odk_kwargs,
-            odm_kwargs: odm_kwargs
-        }
-        $.ajax({
-            type: 'POST',
-            url: `/api/mesh/${id}`,
-            data: JSON.stringify(content),
-            contentType: "application/json",
-            dataType: 'json',
-            // Submit parent form on success.
-            success: function(data) {
-                // refresh project list
-                odk2odm_progress += 1;
-                update_odm_task();
-                upload_title = `${data}`;
-
-            },
-            // Enable save button again.
-            error: function(data, xhr) {
-                console.log(xhr);
-                flashMessage([{"type": "danger", "message": `Could not upload file ${attachment.name}`}])
-            }
-        });
-    }
-}
-
 function buttons () {
+    // bootstrap table button configuration. We have two buttons: one to transfer all queried submissions, and one to
+    // only transfer the check-box selected ones
     return {
       btnTransfer: {
         text: 'Transfer to ODK',
@@ -481,11 +417,11 @@ function buttons () {
 }
 
 function mesh_to_game () {
+    // TODO: implement when Ivan's work on meshlab is sorted out
     alert("This functionality is not yet implemented. If you want to retrieve the mesh, please go to the configured ODM server and project and download it from there.")
 }
 
 $( document ).ready(function() {
     update_upload();
     update_odm_task();
-//    setInterval(update_odm_task, 3000);
 });

@@ -1,3 +1,4 @@
+import os
 import time
 from flask import Blueprint, jsonify, request, url_for, flash
 from flask_security import login_required, current_user
@@ -5,7 +6,10 @@ from models.mesh import Mesh
 from models import db
 from odk2odm import odk_requests
 from odk2odm import odm_requests
+from celery import states
+from celery.exceptions import Ignore
 # API components that retrieve or download data from database for use on front end
+from cryptography.fernet import Fernet
 
 mesh_api = Blueprint("mesh_api", __name__)
 
@@ -41,6 +45,8 @@ def odk2odm(self, submissions=[], odk={}, odm={}):
         :param att: attachment details from odk server
         :return:
         """
+        print(odm)
+        print(f"Transfer of {att}")
         res = odm_requests.get_thumbnail(filename=att["name"], **odm)
         if res.status_code == 200:
             msg = f"{att['name']} already uploaded, so skipping..."
@@ -59,26 +65,20 @@ def odk2odm(self, submissions=[], odk={}, odm={}):
         try:
             if res.status_code != 200:
                 # something went wrong, so report that
-                state = "ERROR"
-                status = jsonify(res.json())
+                raise IOError(res.json())
         except:
-            state = "ERROR"
-            status = f"Cannot reach ODK server at {odk['url']}"
+            raise IOError(f"Cannot reach ODK server at {odk['url']}")
         # post it on the task
         # retrieve file contents (should only contain "images" but checking for all keys to make sure)
-        if state != "ERROR":
-            fields = {"images": (att["name"], res.content, "images/jpg")}
-            try:
-                res = odm_requests.post_upload(fields=fields, **odm)
-                if res.status_code == 200:
-                    status = f"{att['name']} uploaded..."
-                else:
-                    state = "ERROR"
-                    status = jsonify(res.json())
-            except:
-                state = "ERROR"
-                status = f"Cannot reach ODM server at {odm['url']}"
-        print(f"State is: {status}")
+        fields = {"images": (att["name"], res.content, "images/jpg")}
+        try:
+            res = odm_requests.post_upload(fields=fields, **odm)
+            if res.status_code == 200:
+                status = f"{att['name']} uploaded..."
+            else:
+                raise IOError(res.json())
+        except:
+            raise IOError(f"Cannot reach ODM server at {odm['url']}")
         self.update_state(
             state=state,
             meta={
@@ -88,11 +88,34 @@ def odk2odm(self, submissions=[], odk={}, odm={}):
             }
         )
         return
+    # setup authentication for both server
+    f = Fernet(os.getenv("FERNET_KEY"))  # prepare decryption
+    odk["aut"] = (odk["user"], f.decrypt(odk["password_encrypt"].encode()).decode())
+    del odk["user"], odk["password_encrypt"]
+    res = odm_requests.get_token_auth(
+        odm["base_url"],
+        odm["user"],
+        f.decrypt(odm["password_encrypt"].encode()).decode()
+    )
+    print(f"failed login is: {res.status_code}")
+    if res.status_code == 400:
+        # login failed so return an error
+        raise PermissionError("Access denied to ODM server")
 
-    print("Running job as a Thread!")
+    odm["token"] = res.json()["token"]
+    del odm["user"], odm["password_encrypt"]
+
+    print(f"odk conf: {odk}")
+    print(f"odm conf: {odm}")
+    print(f"Submissions: {submissions}")
     for n, sub in enumerate(submissions):
         # retrieve all attachments
+        print(sub["instanceId"])
         attachments = odk_requests.attachment_list(instanceId=sub["instanceId"], **odk)
+        print(attachments.status_code)
+        print(f"Attachments {attachments.json()}")
+        if attachments.status_code == 401:
+            raise PermissionError("Access denied to ODK server")
         for att in attachments.json():
             transfer(att)
     # finally return the success status
@@ -182,6 +205,7 @@ def submit_upload(id):
     # retrieve content
     content = request.get_json()
     submissions = content["submissions"]
+    print(f"submissions: {submissions}")
     odm_task = content["odm_task"]  # needs to be specified by the user on front end, therefore a loose item
     odk_formId = content["odk_formId"]
     odk_server = mesh.odkproject.odk
@@ -189,18 +213,22 @@ def submit_upload(id):
     odm_server = odmproject.odm  # odm server record
     odm = {
         "base_url": odm_server.url,
+        "user": odm_server.user,
+        "password_encrypt": odm_server.password_encrypt.decode(),
         "token": odm_server.token,
         "project_id": mesh.odmproject.remote_id,
         "task_id": odm_task
     }
     odk = {
         "base_url": odk_server.url,
+        "user": odk_server.user,
+        "password_encrypt": odk_server.password_encrypt.decode(),
         "aut": (odk_server.user, odk_server.password),
         "projectId": mesh.odkproject.remote_id,
         "formId": odk_formId
     }
 
-    task = odk2odm.apply_async(submissions=submissions, odk=odk, odm=odm)
+    task = odk2odm.apply_async(kwargs={"submissions": submissions, "odk": odk, "odm": odm})
     # odk
     #
     # task = test_job.apply_async()
