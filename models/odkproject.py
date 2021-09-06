@@ -62,4 +62,5 @@ def receive_after_insert(mapper, connection, target):
         # TODO: finish
         res = odk_requests.create_form(base_url, aut, projectId, name, data)
         responses.append(res.json())
+    res = odk_requests.give_access_app_users(base_url, aut, projectId)
     return responses, 200
