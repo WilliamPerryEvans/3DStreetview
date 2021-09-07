@@ -49,3 +49,9 @@ class User(Base, UserMixin):
     roles = relationship(
         "Role", secondary="roles_users", backref=backref("users", lazy="dynamic")
     )
+
+    def __str__(self):
+        return "{}".format(self.email)
+
+    def __repr__(self):
+        return "{}: {}".format(self.id, self.__str__())

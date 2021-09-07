@@ -1,4 +1,4 @@
-from flask import request, redirect, flash
+from flask import request, redirect, flash, has_app_context
 from flask_security import current_user
 from flask_admin import expose
 from flask_admin.babel import gettext
@@ -21,21 +21,64 @@ class MeshView(UserModelView):
             odkconfigs = Odk.query.filter(Odk.user_id == current_user.id).all()
             kwargs["odm_configs"] = odmconfigs
             kwargs["odk_configs"] = odkconfigs
-
         return super(MeshView, self).render(template, **kwargs)
 
     details_modal = True
     can_edit = True
-    column_list = (
-        Mesh.id,
-        Mesh.latitude,
-        Mesh.longitude,
-        Mesh.name,
-        # Mesh.zipfile,
-        Mesh.status,
-        "odmproject_id",
-        "odkproject_id",
-    )
+
+    @property
+    def column_list(self):
+        user_column_list = [
+            Mesh.id,
+            Mesh.latitude,
+            Mesh.longitude,
+            Mesh.name,
+            # Mesh.zipfile,
+            Mesh.status,
+            "odmproject_id",
+            "odkproject_id",
+        ]
+        if has_app_context() and current_user.has_role('admin'):
+            user_column_list.append("user")
+        return user_column_list
+    @property
+    def _list_columns(self):
+        return self.get_list_columns()
+
+    @_list_columns.setter
+    def _list_columns(self, value):
+        pass
+
+    @property
+    def form_columns(self):
+        user_form_columns = [
+            Mesh.latitude,
+            Mesh.longitude,
+            Mesh.name,
+            # "zipfile",
+            "odmproject_id",
+            "odkproject_id",
+        ]
+        if has_app_context() and current_user.has_role('admin'):
+            user_form_columns.append("user")
+        return user_form_columns
+
+    @property
+    def _create_form_class(self):
+        return self.get_create_form()
+
+    @_create_form_class.setter
+    def _create_form_class(self, value):
+        pass
+
+    @property
+    def _edit_form_class(self):
+        return self.get_edit_form()
+
+    @_edit_form_class.setter
+    def _edit_form_class(self, value):
+        pass
+
     column_labels = {
         "name": "Mesh name",
         # "zipfile": "Zip file",
@@ -48,14 +91,6 @@ class MeshView(UserModelView):
         # "zipfile": form.FileUploadField("Mesh zipfile", base_path="mesh", allowed_extensions=["zip"]),
     }
 
-    form_columns = (
-        Mesh.latitude,
-        Mesh.longitude,
-        Mesh.name,
-        # "zipfile",
-        "odmproject_id",
-        "odkproject_id",
-    )
     column_extra_row_actions = [  # Add a new action button
         EndpointLinkRowAction("fa fa-exchange", ".odk2odm"),
     ]
@@ -65,6 +100,7 @@ class MeshView(UserModelView):
     list_template = "mesh/list.html"
     create_template = "mesh/create.html"
     details_modal_template = "mesh/details.html"
+    edit_template = "mesh/edit.html"
     odk2odm_template = "mesh/odk2odm.html"
 
     @expose("/odk2odm", methods=("GET",))
@@ -106,7 +142,10 @@ class MeshView(UserModelView):
 
         :return:
         """
-        return super(MeshView, self).get_query().filter(Mesh.user_id == current_user.id)
+        if not(current_user.has_role("admin")):
+            return super(MeshView, self).get_query().filter(Mesh.user_id == current_user.id)
+        else:
+            return super(MeshView, self).get_query()
 
     def get_one(self, id):
         """
@@ -115,7 +154,11 @@ class MeshView(UserModelView):
         :param id:
         :return:
         """
-        return super(MeshView, self).get_query().filter_by(id=id).filter(Mesh.user_id == current_user.id).one()
+        if not(current_user.has_role("admin")):
+            return super(MeshView, self).get_query().filter_by(id=id).filter(Mesh.user_id == current_user.id).one()
+        else:
+            return super(MeshView, self).get_query().filter_by(id=id).one()
+
 
     def on_model_change(self, form, model, is_created):
         """
