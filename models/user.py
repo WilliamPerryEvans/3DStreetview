@@ -26,6 +26,11 @@ class Role(Base, RoleMixin):
     id = Column(Integer(), primary_key=True)
     name = Column(String(80), unique=True)
     description = Column(String(255))
+    def __str__(self):
+        return "{}".format(self.description)
+
+    def __repr__(self):
+        return "{}: {}".format(self.id, self.__str__())
 
 
 class User(Base, UserMixin):

@@ -61,6 +61,19 @@ def security_context_processor():
         get_url=url_for,
     )
 
+@app.before_first_request
+def create_admin_user():
+    """
+    In case no roles exist, these are created
+    In case no admin user exists, the user is redirected to the page for admin user creation
+    Adapted from example https://gist.github.com/skyuplam/ffb1b5f12d7ad787f6e4
+    :return:
+    """
+    user_datastore.find_or_create_role(name="admin", description="Administrator")
+    user_datastore.find_or_create_role(name="end-user", description="End user")
+    db.commit()
+    # try a redirect to another page, before any request is handled
+    return redirect("/register", code=302)
 
 # Resolve database session issues for the combination of Postgres/Sqlalchemy scoped session/Flask-admin.
 @app.teardown_appcontext
