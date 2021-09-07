@@ -1,7 +1,8 @@
 import os
 from flask import Flask, redirect, jsonify, url_for
 from flask_admin import helpers as admin_helpers
-from flask_security import Security, SQLAlchemySessionUserDatastore
+from flask_security import Security, SQLAlchemySessionUserDatastore, RegisterForm
+from wtforms import HiddenField, BooleanField
 from celery import Celery
 
 from models import db
@@ -39,17 +40,17 @@ def create_app(config_name):
     app.register_blueprint(odkproject_api)
     return app
 
+class ExtendedRegisterForm(RegisterForm):
+    active = BooleanField("active")
 
 app = create_app(__name__)
 # Setup Flask-Security
-security = Security(app, user_datastore)
-
+security = Security(app, user_datastore, register_form=ExtendedRegisterForm)
+# security = Security(app, user_datastore)
 
 @app.route("/")
 def index():
     return redirect("/dashboard", code=302)
-
-
 
 # Provide necessary vars to flask-admin views.
 @security.context_processor
@@ -72,8 +73,6 @@ def create_admin_user():
     user_datastore.find_or_create_role(name="admin", description="Administrator")
     user_datastore.find_or_create_role(name="end-user", description="End user")
     db.commit()
-    # try a redirect to another page, before any request is handled
-    return redirect("/register", code=302)
 
 # Resolve database session issues for the combination of Postgres/Sqlalchemy scoped session/Flask-admin.
 @app.teardown_appcontext
