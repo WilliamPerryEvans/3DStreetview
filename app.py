@@ -41,6 +41,9 @@ def create_app(config_name):
     return app
 
 class ExtendedRegisterForm(RegisterForm):
+    """
+    Make sure that new registrations of users are by default inactive
+    """
     active = BooleanField("active")
 
 app = create_app(__name__)
