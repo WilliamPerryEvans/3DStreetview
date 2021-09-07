@@ -1,0 +1,9 @@
+<p>{{ _('Welcome %(email)s!', email=user.email) }}</p>
+<p>Your account is pending approval. We will contact you as soon as possible.</p>
+<p>Please store your username and password in the mean time.</p>
+
+{% if security.confirmable %}
+<p>{{ _('You can confirm your email through the link below:') }}</p>
+
+<p><a href="{{ confirmation_link }}">{{ _('Confirm my account') }}</a></p>
+{% endif %}

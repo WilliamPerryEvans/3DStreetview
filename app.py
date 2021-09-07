@@ -1,7 +1,9 @@
 import os
-from flask import Flask, redirect, jsonify, url_for
+from flask import Flask, redirect, jsonify, url_for, request
 from flask_admin import helpers as admin_helpers
 from flask_security import Security, SQLAlchemySessionUserDatastore, RegisterForm
+from flask_security.signals import user_registered
+from flask_mail import Mail, Message
 from wtforms import HiddenField, BooleanField
 from celery import Celery
 
@@ -18,12 +20,18 @@ def create_app(config_name):
     app.debug = False
     app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
     app.config["SECURITY_REGISTERABLE"] = True
-    app.config["SECURITY_SEND_REGISTER_EMAIL"] = False
+    app.config["SECURITY_SEND_REGISTER_EMAIL"] = True
     app.config["SECURITY_PASSWORD_SALT"] = os.getenv("SECURITY_PASSWORD_SALT")
     app.config["FERNET_KEY"] = os.getenv("FERNET_KEY")
     app.config["CELERY_BROKER_URL"] = os.getenv("CELERY_URL")
-    # app.config["CELERY_RESULT_BACKEND"] = os.getenv("CELERY_URL")
     app.config["result_backend"] = os.getenv("CELERY_URL")
+    app.config["MAIL_SERVER"] = "smtp.gmail.com"
+    app.config["MAIL_PORT"] = 587
+    app.config["MAIL_USE_TLS"] = True
+    app.config["MAIL_USERNAME"] = os.getenv("MAIL_USERNAME")
+    app.config["MAIL_PASSWORD"] = os.getenv("MAIL_PASSWORD")
+    app.config["MAIL_DEFAULT_SENDER"] = os.getenv("MAIL_SENDER")
+    app.config["SECURITY_EMAIL_SENDER"] = os.getenv("MAIL_SENDER")
     # Create admin interface
     admin.init_app(app)
     # after the blueprints are added, also configure celery
@@ -49,7 +57,24 @@ class ExtendedRegisterForm(RegisterForm):
 app = create_app(__name__)
 # Setup Flask-Security
 security = Security(app, user_datastore, register_form=ExtendedRegisterForm)
+mail = Mail(app)
+
+
 # security = Security(app, user_datastore)
+
+
+@user_registered.connect_via(app)
+def user_registered_sighandler(sender, **kwargs):
+    print("Check the status")
+    # print("print-user_registered_sighandler:", u.get('user').email)
+    msg = Message(
+        f"New user registration on {request.base_url}",
+        # sender=app.config["MAIL_DEFAULT_SENDER"],
+        recipients=[app.config["MAIL_USERNAME"]]
+    )
+    msg.body = f"Please note that a new user from email address {kwargs['user'].email} was registered on {request.base_url}\nPlease activate this user by browsing to {url_for('user.edit_view', id=kwargs['user'].id, _external=True)}"
+    mail.send(msg)
+
 
 @app.route("/")
 def index():
