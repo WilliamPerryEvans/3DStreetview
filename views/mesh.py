@@ -1,6 +1,6 @@
 from flask import request, redirect, flash
 from flask_security import current_user
-from flask_admin import form, expose
+from flask_admin import expose
 from flask_admin.babel import gettext
 from flask_admin.model.template import EndpointLinkRowAction
 from flask_admin.helpers import get_redirect_target
@@ -17,8 +17,8 @@ class MeshView(UserModelView):
         # example modified from https://stackoverflow.com/questions/65892714/pass-other-object-data-into-flask-admin-model-view-edit-template
         if template in ['mesh/details.html', 'mesh/create.html']:
             # add odm config and odk config to variables available in jinja template
-            odmconfigs = Odm.query.all()
-            odkconfigs = Odk.query.all()
+            odmconfigs = Odm.query.filter(Odm.user_id == current_user.id).all()
+            odkconfigs = Odk.query.filter(Odk.user_id == current_user.id).all()
             kwargs["odm_configs"] = odmconfigs
             kwargs["odk_configs"] = odkconfigs
 

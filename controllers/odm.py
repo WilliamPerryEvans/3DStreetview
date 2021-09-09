@@ -192,6 +192,19 @@ def post_cancel(id, project_id, task_id):
     except:
         return f"Page {odm.url} does not exist", 404
 
+@odm_api.route("/api/odm/<id>/projects/<project_id>", methods=["DELETE"])
+@login_required
+def delete_project(id, project_id):
+    odm = get_odm(id)
+    if not(isinstance(odm, Odm)):
+        return odm
+    try:
+        res = odm_requests.delete_project(odm.url, odm.token, project_id)
+        return jsonify("Success", 200)
+    except:
+        return f"Page {odm.url} does not exist", 404
+
+
 
 @odm_api.route("/api/odm/<id>/projects/<project_id>/tasks/<task_id>/remove/", methods=["POST"])
 @login_required

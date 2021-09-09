@@ -59,7 +59,7 @@ def receive_after_insert(mapper, connection, target):
         with open(odk_form, "rb") as f:
             data = f.read()
         name = os.path.split(odk_form)[-1].split(".")[0]
-        # TODO: finish
         res = odk_requests.create_form(base_url, aut, projectId, name, data)
         responses.append(res.json())
+    res = odk_requests.give_access_app_users(base_url, aut, projectId)
     return responses, 200

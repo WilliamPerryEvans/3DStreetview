@@ -40,6 +40,7 @@ class Mesh(Base, SerializerMixin):
     longitude = Column(Float, nullable=False)
     # zipfile = Column(String)  # if a .zip file containing a mesh is supplied, then this is unzipped immediately.
     status = Column(Enum(MeshStatus), default=MeshStatus.NEW)
+    current_task = Column(String)
     # project = relationship("Project")
     odmproject = relationship("Odmproject")
     odkproject = relationship("Odkproject")

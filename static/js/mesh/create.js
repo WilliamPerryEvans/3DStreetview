@@ -116,7 +116,6 @@ function save_odk_project() {
         // Submit parent form on success.
         success: function(data) {
             console.log(data);
-
             $.ajax({
                 type: 'POST',
                 url: `/api/odk/${odkconfig_id}/projects/${data.id}/app-users`,
@@ -167,8 +166,6 @@ $('form.admin-form').submit(function( event ) {
         "odk_id": parseInt(document.getElementById("odk_config").value),
         "remote_id": parseInt(document.getElementById("odk_project").value)
     }
-    console.log(content);
-
     $.ajax({
         type: 'POST',
         url: `/api/odmproject/create_project`,
@@ -209,3 +206,75 @@ $('form.admin-form').submit(function( event ) {
         }
     });
 });
+
+function delete_odk_project() {
+    // switch off buttons to prevent submitting twice
+    $("#odk_project_create").prop("disabled", true)
+    $("#odk_project_delete").prop("disabled", true)
+    id = parseInt(document.getElementById("odk_config").value)
+    project_id = parseInt(document.getElementById("odk_project").value)
+    if (confirm(`If you delete project then all forms, submissions and other data belonging to that ODK project will be permanently deleted`)) {
+        url = `/api/odk/${id}/projects/${project_id}`
+        $.ajax({
+            type: 'DELETE',
+            url: url,
+            contentType: "application/json",
+            dataType: 'json',
+            // Submit parent form on success.
+            success: function(data) {
+                console.log(data);
+                flashMessage([{"type": "success", "message": `Successfully deleted ODK project with id: ${project_id}`}])
+
+                // place the newly created local odm project ref in the hidden odmproject_id
+            },
+            // Enable save button again.
+            error: function() {
+                flashMessage([{"type": "danger", "message": `Not able to delete ODK project with id: ${project_id}, did your permissions change?`}])
+            }
+        }).done(function() {
+            // refresh list of ODK projects
+            $("#odk_project").val('null').change()
+            get_odk_projects();
+            // switch buttons back on
+            $("#odk_project_create").prop("disabled", false)
+            $("#odk_project_delete").prop("disabled", false)
+        });
+    }
+}
+
+
+function delete_odm_project() {
+    // switch off buttons to prevent submitting twice
+    $("#odm_project_create").prop("disabled", true)
+    $("#odm_project_delete").prop("disabled", true)
+    id = parseInt(document.getElementById("odm_config").value)
+    project_id = parseInt(document.getElementById("odm_project").value)
+    if (confirm(`If you delete project then all tasks, photos, photogrammetry results and other data belonging to that ODM project will be permanently deleted`)) {
+        url = `/api/odm/${id}/projects/${project_id}`
+        $.ajax({
+            type: 'DELETE',
+            url: url,
+            contentType: "application/json",
+            dataType: 'json',
+            // Submit parent form on success.
+            success: function(data) {
+                console.log(data);
+                flashMessage([{"type": "success", "message": `Successfully deleted ODM project with id: ${project_id}`}])
+
+                // place the newly created local odm project ref in the hidden odmproject_id
+            },
+            // Enable save button again.
+            error: function(data) {
+                console.log(data)
+                flashMessage([{"type": "danger", "message": `Not able to delete ODM project with id: ${project_id}, did your permissions change?`}])
+            }
+        }).done(function() {
+            // refresh list of ODK projects
+            $("#odm_project").val('null').change()
+            get_odm_projects();
+            // switch buttons back on
+            $("#odm_project_create").prop("disabled", false)
+            $("#odm_project_delete").prop("disabled", false)
+        });
+    }
+}

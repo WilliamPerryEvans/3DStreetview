@@ -4,6 +4,7 @@
 {% endblock %}
 {% block body %}
 <input type="hidden" id="mesh_id" value="{{ model.id }}" />
+<input type="hidden" id="current_task" value="{{ model.current_task }}" />
 <input type="hidden" id="odm_config" value="{{ model.odmproject.odm.id }}" />
 <input type="hidden" id="odmproject_id" value="{{ model.odmproject.remote_id }}" />
 <input type="hidden" id="odk_config" value="{{ model.odkproject.odk.id }}" />
@@ -78,7 +79,7 @@
             <span>ODK project name: {{ model.odmproject.project['name'] }} </span><br><br>
             <div class="form-group ">
                 <label for="odm_task" class="control-label">Select ODM task</label>
-                <select class="form-control" data-role="select2" id="odm_task" onchange="get_odm_task()" name="odm_task" required>
+                <select class="form-control" data-role="select2" id="odm_task" onchange="update_odm_task()" name="odm_task" required>
                 </select>
                 <div class="btn-toolbar">
                     <button type="button" id="task_create_button" disabled="true" data-toggle="modal" data-target="#newOdmTask" class="btn btn-primary mt-2 mx-2">New task</button>
@@ -99,7 +100,7 @@
                     <div class="col-sm-3 details" id="processing_time"><i class="far fa-clock"></i><span></span></div>
                 </div>
                 <div class="row">
-                    <div class="col" id="progress_title">Upload progress</div>
+                    <div class="col" id="upload_title">Upload progress</div>
                 </div>
                 <div class="progress">
                     <div class="progress-bar" role="progressbar" aria-valuenow="0" style="width: 0%;" aria-valuemin="0" aria-valuemax="100" id="upload_progress">Upload progress</div>
