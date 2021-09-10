@@ -88,6 +88,7 @@ setup_dbase() {
 
     echo '################################'
     echo 'PostgreSQL database ${POSTGRES_DB} WITH OWNER ${POSTGRES_USER} setup.'
+    sudo ufw allow postgres
 }
 
 setup_redis() {
@@ -213,7 +214,9 @@ EOF
     echo Procuring a certificate for the site from LetsEncrypt using Certbot
     sudo certbot --nginx -n --agree-tos --redirect -m $email -d $domain_name -d www.$domain_name
 
-
+    # setup firewall rules
+    echo 'Add Nginx HTTPS to firewall rules'
+    sudo ufw allow 'Nginx HTTPS'
 
 
     echo 'adding the 3DStreetview service to Systemd'
