@@ -1,1 +1,10 @@
 {% extends 'admin/model/list.html' %}
+{% block body %}
+<div class="row">
+    <div class="col">
+        <div class="container">
+            <h2>ODK Server configurations</h2><span>Here you can see you existing stored ODK server configurations. Configure new ODK servers with credentials here by clicking on 'Create'. Credentials are securely stored with encryption. </span><hr></div>
+    </div>
+</div>
+{{ super() }}
+{% endblock %}
