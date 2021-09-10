@@ -8,10 +8,13 @@ from sqlalchemy import (
     Float,
     Text,
     Boolean,
+    event
 )
 from sqlalchemy.orm import relationship, backref
 from models.base import Base
+from flask import request
 from flask_security import UserMixin, RoleMixin
+from flask_mail import Message
 
 
 class RolesUsers(Base):
@@ -55,3 +58,21 @@ class User(Base, UserMixin):
 
     def __repr__(self):
         return "{}: {}".format(self.id, self.__str__())
+
+
+@event.listens_for(User, "after_update")
+def receive_after_update(mapper, connection, target):
+    """
+    event listener, to be executed when the active status was changed
+    """
+    if target.active:
+        # apparently user is set to active, so send out an email
+        from app import app, mail
+        if app.config["SECURITY_SEND_REGISTER_EMAIL"]:
+            msg = Message(
+                f"Welcome to 3DStreetView",
+                recipients=[target.email]
+            )
+            msg.body = f"We have activated your account and you can now browse to {request.url_root} to start creating immersive meshes with our platform.\n If you have questions or feedback, please contact us at info@rainbowsensing.com."
+            mail.send(msg)
+
