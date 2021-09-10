@@ -1,17 +1,67 @@
+from flask import has_app_context
 from flask_security import current_user
 from wtforms import ValidationError, PasswordField
 from views.general import UserModelView
 from models.odk import Odk
 
 class OdkconfigView(UserModelView):
-    can_edit = False
-    column_list = (
-        Odk.id,
-        Odk.name,
-        Odk.host,
-        Odk.port,
-        Odk.user,
-    )
+    @property
+    def can_edit(self):
+        if has_app_context() and current_user.has_role('admin'):
+            return True
+        else:
+            return False
+
+    @property
+    def column_list(self):
+        user_column_list = [
+            Odk.id,
+            Odk.name,
+            Odk.host,
+            Odk.port,
+            Odk.user,
+        ]
+        if has_app_context() and current_user.has_role('admin'):
+            user_column_list.append("app_user")
+        return user_column_list
+
+    @property
+    def _list_columns(self):
+        return self.get_list_columns()
+
+    @_list_columns.setter
+    def _list_columns(self, value):
+        pass
+
+    @property
+    def form_columns(self):
+        user_form_columns = [
+            Odk.name,
+            Odk.host,
+            Odk.port,
+            Odk.user,
+            "password_encrypt",
+        ]
+        if has_app_context() and current_user.has_role('admin'):
+            user_form_columns.append("app_user")
+        return user_form_columns
+
+    @property
+    def _create_form_class(self):
+        return self.get_create_form()
+
+    @_create_form_class.setter
+    def _create_form_class(self, value):
+        pass
+
+    @property
+    def _edit_form_class(self):
+        return self.get_edit_form()
+
+    @_edit_form_class.setter
+    def _edit_form_class(self, value):
+        pass
+
     column_details_list = (
         Odk.name,
         Odk.host,
@@ -23,14 +73,6 @@ class OdkconfigView(UserModelView):
     }
     column_descriptions = {
     }
-    form_columns = (
-        Odk.name,
-        Odk.host,
-        Odk.port,
-        Odk.user,
-        "password_encrypt",
-    )
-
     form_extra_fields = {
         "password_encrypt": PasswordField("Password"),
     }
@@ -46,7 +88,11 @@ class OdkconfigView(UserModelView):
 
         :return:
         """
-        return super(OdkconfigView, self).get_query().filter(Odk.user_id == current_user.id)
+        if not(current_user.has_role("admin")):
+            return super(OdkconfigView, self).get_query().filter(Odk.user_id == current_user.id)
+        else:
+            return super(OdkconfigView, self).get_query()
+
 
     def get_one(self, id):
         """
@@ -55,7 +101,11 @@ class OdkconfigView(UserModelView):
         :param id:
         :return:
         """
-        return super(OdkconfigView, self).get_query().filter_by(id=id).filter(Odk.user_id == current_user.id).one()
+        if not(current_user.has_role("admin")):
+            return super(OdkconfigView, self).get_query().filter_by(id=id).filter(Odk.user_id == current_user.id).one()
+        else:
+            return super(OdkconfigView, self).get_query().filter_by(id=id).one()
+
 
     def on_model_change(self, form, model, is_created):
         """
