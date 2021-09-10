@@ -115,15 +115,18 @@ setup_redis() {
         sudo apt install -y redis-server
     else echo redis-server seems to be already installed
     fi
-
     # make sure that redis is supervised by systemd
+    echo 'Making redis supervised by systemd'
     sudo sed -i 's/supervised no/supervised systemd/g' /etc/redis/redis.conf
     # make redis password secure
     # TODO: in case we want workers to operate outside of the app server, then work on firewall rules and access
+    echo 'I am creating a very secure 64-bit encrypted password for you'
     export REDIS_PASSWORD=`openssl rand 60 | openssl base64 -A`
     # modify redis password in .env and in redis configuration
     sed -i "/REDIS_PASSWORD=/c\REDIS_PASSWORD=${REDIS_PASSWORD}" ./.env
     sudo sed -i "/# requirepass /c\requirepass ${REDIS_PASSWORD}" /etc/redis/redis.conf
+    # in case there already was a redis password, it'll be replaced
+    sudo sed -i "/requirepass /c\requirepass ${REDIS_PASSWORD}" /etc/redis/redis.conf
     # TODO: possibly renaming of redis commands can be added for additional security after development has been done
     # see https://www.digitalocean.com/community/tutorials/how-to-install-and-secure-redis-on-ubuntu-20-04
     # finally restart the redis service
