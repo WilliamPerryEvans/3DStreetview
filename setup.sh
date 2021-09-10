@@ -54,10 +54,11 @@ setup_dbase() {
     echo 'Your .env environmental variables dictate the following settings for your database'
     echo 'Variable            Description               Value'
     echo '=================== ========================= ===================================='
-    echo 'POSTGRES_DB         Name of the database      ${POSTGRES_DB}'
-    echo 'POSTGRES_DB         Name of the database      ${POSTGRES_DB}'
-    echo 'POSTGRES_USER       Owner of the database     ${POSTGRES_USER}'
-    echo 'POSTGRES_PASSWORD   Password of owner         ${POSTGRES_PASSWORD}'
+    echo 'POSTGRES_DB         Name of the database      '${POSTGRES_DB}
+    echo 'POSTGRES_SERVER     Location of server        '${POSTGRES_SERVER}
+    echo 'POSTGRES_PORT       Listening port of server  '${POSTGRES_PORT}
+    echo 'POSTGRES_USER       Owner of the database     '${POSTGRES_USER}
+    echo 'POSTGRES_PASSWORD   Password of owner         '${POSTGRES_PASSWORD}
     echo ''
     read -p 'Are you sure you want to continue with these settings? If you select [n] I will exit. [y/n]' -n 1 -r
     echo    # (optional) move to a new line
@@ -72,8 +73,10 @@ setup_dbase() {
         sudo apt install -y postgresql postgresql-contrib libpq-dev
     else echo 'PostgreSQL seems to be already installed'
     fi
+    sudo sed -i "/port /c\port = ${POSTGRES_PORT}" /etc/postgresql/12/main/postgresql.conf
+    sudo systemctl restart postgresql
     echo 'Setting up database'
-    echo 'Creating postgres user ${POSTGRES_USER} with password ${POSTGRES_PASSWORD}'
+    echo "Creating postgres user ${POSTGRES_USER} with password ${POSTGRES_PASSWORD}"
     sudo -u postgres psql -c "CREATE ROLE ${POSTGRES_USER} WITH PASSWORD '${POSTGRES_PASSWORD}';"
     sudo -u postgres psql -c "ALTER ROLE ${POSTGRES_USER} WITH LOGIN"
     sudo -u postgres psql -c "ALTER ROLE ${POSTGRES_USER} WITH SUPERUSER"
@@ -87,8 +90,8 @@ setup_dbase() {
     echo "host    all             all              ::/0                            md5" | sudo tee -a /etc/postgresql/12/main/pg_hba.conf
 
     echo '################################'
-    echo 'PostgreSQL database ${POSTGRES_DB} WITH OWNER ${POSTGRES_USER} setup.'
-    sudo ufw allow postgres
+    echo "PostgreSQL database ${POSTGRES_DB} WITH OWNER ${POSTGRES_USER} setup."
+    sudo ufw allow ${POSTGRES_PORT}
 }
 
 setup_redis() {
@@ -141,18 +144,18 @@ setup_portal() {
     echo 'Your .env environmental variables dictate the following settings for the portal setup'
     echo 'Variable                Description                 Value'
     echo '======================= =========================   ===================================='
-    echo 'DB_CONNECTION_STRING    url to postgresql database  ${DB_CONNECTION_STRING}'
-    echo 'SECRET_KEY              Key for hiding secrets      ${SECRET_KEY}'
-    echo 'SECURITY_PASSWORD_SALT  Security hash key           ${SECURITY_PASSWORD_SALT}'
-    echo 'CELERY_URL              Celery broker connection    ${CELERY_URL}'
-    echo 'SEND_REGISTER_EMAIL     Send emails False/True      ${SEND_REGISTER_EMAIL}'
-    echo 'MAIL_SERVER             SMTP address                ${MAIL_SERVER}'
-    echo 'MAIL_PORT               Port number of SMTP server  ${MAIL_PORT}'
-    echo 'MAIL_USE_TLS            Use TLS (False/True)        ${MAIL_USE_TLS}'
-    echo 'MAIL_USERNAME           Use TLS (False/True)        ${MAIL_USERNAME}'
-    echo 'MAIL_USERNAME           Use TLS (False/True)        ${MAIL_USERNAME}'
-    echo 'MAIL_PASSWORD           Use TLS (False/True)        ${MAIL_PASSWORD}'
-    echo 'MAIL_SENDER             Use TLS (False/True)        ${MAIL_SENDER}'
+    echo 'DB_CONNECTION_STRING    url to postgresql database  '${DB_CONNECTION_STRING}
+    echo 'SECRET_KEY              Key for hiding secrets      '${SECRET_KEY}
+    echo 'SECURITY_PASSWORD_SALT  Security hash key           '${SECURITY_PASSWORD_SALT}
+    echo 'CELERY_URL              Celery broker connection    '${CELERY_URL}
+    echo 'SEND_REGISTER_EMAIL     Send emails False/True      '${SEND_REGISTER_EMAIL}
+    echo 'MAIL_SERVER             SMTP address                '${MAIL_SERVER}
+    echo 'MAIL_PORT               Port number of SMTP server  '${MAIL_PORT}
+    echo 'MAIL_USE_TLS            Use TLS (False/True)        '${MAIL_USE_TLS}
+    echo 'MAIL_USERNAME           Use TLS (False/True)        '${MAIL_USERNAME}
+    echo 'MAIL_USERNAME           Use TLS (False/True)        '${MAIL_USERNAME}
+    echo 'MAIL_PASSWORD           Use TLS (False/True)        '${MAIL_PASSWORD}
+    echo 'MAIL_SENDER             Use TLS (False/True)        '${MAIL_SENDER}
     echo ''
     echo 'Note: If SEND_REGISTER_EMAIL is set to true, then all relevant MAIL settings are also required to be valid'
     echo 'Note: You need a valid domain name that you own to complete this setup component!!'
@@ -253,7 +256,7 @@ setup_worker() {
     echo 'Your .env environmental variables dictate the following settings for the worker setup'
     echo 'Variable                Description                 Value'
     echo '======================= =========================   ===================================='
-    echo 'CELERY_URL              Celery broker connection    ${CELERY_URL}'
+    echo 'CELERY_URL              Celery broker connection    '${CELERY_URL}
     echo ''
     read -p 'Are you sure you want to continue with these settings? If you select [n] I will exit. [y/n]' -n 1 -r
     echo    # (optional) move to a new line
@@ -302,7 +305,7 @@ main() {
     then
       export $(cat .env | sed 's/#.*//g' | xargs)
     fi
-    DB_CONNECTION_STRING=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_SERVER}/${POSTGRES_DB}
+    DB_CONNECTION_STRING=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_SERVER}:${POSTGRES_PORT}/${POSTGRES_DB}
     CELERY_URL=redis://:${REDIS_PASSWORD}@localhost:6379/0
     # disable firewall until everything's ready
     sudo ufw disable
