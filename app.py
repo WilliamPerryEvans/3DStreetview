@@ -23,8 +23,9 @@ def create_app(config_name):
     app.config["SECURITY_SEND_REGISTER_EMAIL"] = (os.getenv("SEND_REGISTER_EMAIL").lower() == "true")
     app.config["SECURITY_PASSWORD_SALT"] = os.getenv("SECURITY_PASSWORD_SALT")
     app.config["FERNET_KEY"] = os.getenv("FERNET_KEY")
-    app.config["CELERY_BROKER_URL"] = os.getenv("CELERY_URL")
-    app.config["result_backend"] = os.getenv("CELERY_URL")
+    celery_url = f"redis://:{os.getenv('REDIS_PASSWORD')}@localhost:6379/0"
+    app.config["CELERY_BROKER_URL"] = celery_url
+    app.config["result_backend"] = celery_url
     app.config["MAIL_SERVER"] = os.getenv("MAIL_SERVER")
     app.config["MAIL_PORT"] = int(os.getenv("MAIL_PORT"))
     app.config["MAIL_USE_TLS"] = (os.getenv("MAIL_USE_TLS").lower() == "true")

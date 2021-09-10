@@ -92,6 +92,7 @@ setup_dbase() {
     echo '################################'
     echo "PostgreSQL database ${POSTGRES_DB} WITH OWNER ${POSTGRES_USER} setup."
     sudo ufw allow ${POSTGRES_PORT}
+    sudo systemctl restart postgresql
 }
 
 setup_redis() {
