@@ -125,7 +125,8 @@ setup_redis() {
     # make redis password secure
     # TODO: in case we want workers to operate outside of the app server, then work on firewall rules and access
     echo 'I am creating a very secure 64-bit encrypted password for you'
-    export REDIS_PASSWORD=`openssl rand 60 | openssl base64 -A`
+    # export REDIS_PASSWORD=`openssl rand 60 | openssl base64 -A`
+    export REDIS_PASSWORD=`echo dd if=/dev/urandom bs=32 count=1 2>/dev/null | openssl base64`
     # modify redis password in .env and in redis configuration
     sed -i "/REDIS_PASSWORD=/c\REDIS_PASSWORD=${REDIS_PASSWORD}" ./.env
     sudo sed -i "/# requirepass /c\requirepass ${REDIS_PASSWORD}" /etc/redis/redis.conf
@@ -296,15 +297,18 @@ setup_worker() {
     echo 'adding the 3DStreetview-worker service to Systemd'
     cat > streetview_worker.service <<EOF
 [Unit]
-Description=3DStreetview Celery instance for worker %I
+Description=3DStreetview Celery worker %I
 After=network.target
+
 [Service]
 User=${USER}
 Group=www-data
 WorkingDirectory=${PWD}
-Environment="PATH=/home/${USER}/3dsv/bin"
-ExecStart=/home/${USER}/venv/bin/celery -A app.celery worker --concurrency=1
+Environment="PATH=${PWD}/3dsv/bin"
+EnvironmentFile=${PATH}/.env
+ExecStart=${PWD}/3dsv/bin/celery -A app.celery worker --concurrency=1
 Restart=always
+
 [Install]
 WantedBy=multi-user.target
 EOF
