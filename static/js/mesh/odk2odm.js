@@ -347,8 +347,6 @@ function update_upload() {
     url = `/api/mesh/${id}`;
     $('#upload_title').text("Upload progress");
     prog = document.getElementById('upload_progress')
-    prog.style = `width: 0%`;
-    prog.textContent = ``;
     $.getJSON(url,
         function(mesh) {
             if (`${mesh.current_task}` != "null") {
@@ -372,6 +370,11 @@ function update_upload() {
                                 // keep on refreshing until upload's done
                                 update_upload();
                             }, 2000);
+                        } else if (task["state"] == "FAILURE") {
+                            console.log("Upload failed")
+                            prog.style = `width: 0%`;
+                            prog.textContent = `Upload failed, please retry`;
+                            $('#upload_title').text("Upload failed...");
                         } else {
                             // upload is busy, make sure that no jobs can be started, stopped or deleted
                             document.getElementById('odm_commit').disabled = true
@@ -386,6 +389,9 @@ function update_upload() {
                         }
                     }
                 );
+            } else {
+                prog.style = `width: 0%`;
+                prog.textContent = ``;
             }
         }
     );
