@@ -154,10 +154,9 @@ setup_portal() {
     echo 'MAIL_SERVER             SMTP address                '${MAIL_SERVER}
     echo 'MAIL_PORT               Port number of SMTP server  '${MAIL_PORT}
     echo 'MAIL_USE_TLS            Use TLS (False/True)        '${MAIL_USE_TLS}
-    echo 'MAIL_USERNAME           Use TLS (False/True)        '${MAIL_USERNAME}
-    echo 'MAIL_USERNAME           Use TLS (False/True)        '${MAIL_USERNAME}
-    echo 'MAIL_PASSWORD           Use TLS (False/True)        '${MAIL_PASSWORD}
-    echo 'MAIL_SENDER             Use TLS (False/True)        '${MAIL_SENDER}
+    echo 'MAIL_USERNAME           Username of email           '${MAIL_USERNAME}
+    echo 'MAIL_PASSWORD           Password of email           '${MAIL_PASSWORD}
+    echo 'MAIL_SENDER             Email sender for recipient  '${MAIL_SENDER}
     echo ''
     echo 'Note: If SEND_REGISTER_EMAIL is set to true, then all relevant MAIL settings are also required to be valid'
     echo 'Note: You need a valid domain name that you own to complete this setup component!!'
@@ -181,9 +180,6 @@ setup_portal() {
         sudo apt install -y nginx
     else echo Nginx seems to be already installed
     fi
-    # generation of a suitable 64 bit fernet key
-    export passwd=`echo dd if=/dev/urandom bs=32 count=1 2>/dev/null | openssl base64`
-    sed -i "/FERNET_KEY=/c\FERNET_KEY=${passwd}" ./.env
 
     echo 'setting up python env'
     # Setup the python environments
@@ -192,6 +188,9 @@ setup_portal() {
     pip install wheel
     pip install uwsgi
     pip install -r requirements.txt
+    # generation of a suitable 32bit 64base encoded fernet key
+    export passwd=`python -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())'`
+    sed -i "/FERNET_KEY=/c\FERNET_KEY=${passwd}" ./.env
     # deactivate the virtual environment
     deactivate
     # uwsgi setup
@@ -253,6 +252,7 @@ EOF
 [Unit]
 Description=uWSGI instance to serve 3DStreetview
 After=network.target
+
 [Service]
 User=${USER}
 Group=www-data
@@ -261,6 +261,8 @@ Environment="PATH=${PWD}/3dsv/bin"
 Environment=FLASK_CONFIG=production
 EnvironmentFile=${PWD}/.env
 ExecStart=${PWD}/3dsv/bin/uwsgi --ini ${PWD}/uwsgi.ini
+Restart=always
+
 [Install]
 WantedBy=multi-user.target
 EOF
