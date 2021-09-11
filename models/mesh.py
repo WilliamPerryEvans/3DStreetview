@@ -30,7 +30,7 @@ class Mesh(Base, SerializerMixin):
             - actions of user and callbacks are reflected on status of mesh
     """
     __tablename__ = "mesh"
-    serialize_only = ('id', 'user_id', 'odmproject_id', 'odkproject_id', 'name', 'latitude', 'longitude', 'status', 'current_task')
+    serialize_only = ('id', 'user_id', 'odmproject_id', 'odkproject_id', 'name', 'latitude', 'longitude', 'status', 'current_task', 'odmproject', 'odkproject')
     id = Column(Integer, primary_key=True)
     # Mesh projects are entirely tied to a given user
     user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
