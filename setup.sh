@@ -188,10 +188,31 @@ setup_portal() {
     # Setup the python environments
     python3 -m venv 3dsv
     source 3dsv/bin/activate
+    pip install wheel
     pip install uwsgi
     pip install -r requirements.txt
     # deactivate the virtual environment
     deactivate
+    # uwsgi setup
+    echo 'Making a uwsgi configuration'
+    cat > uwsgi.ini <<EOF
+[uwsgi]
+chdir = ${PWD}
+module = app:app
+
+master = true
+processes = 1
+threads = 2
+
+uid = www-data
+gid = www-data
+
+socket = /tmp/streetview.sock
+chmod-socket = 664
+vacuum = true
+
+die-on-term = true
+EOF
 
     # Nginx setup
     echo 'adding the 3DStreetview portal to nginx'
@@ -202,7 +223,7 @@ server {
     server_name $domain_name www.$domain_name;
     location / {
         include uwsgi_params;
-        uwsgi_pass unix:/tmp/streetview.sock
+        uwsgi_pass unix:/tmp/streetview.sock;
     }
 }
 EOF
@@ -235,9 +256,10 @@ After=network.target
 User=${USER}
 Group=www-data
 WorkingDirectory=${PWD}
-Environment="PATH=/home/${USER}/3dsv/bin"
+Environment="PATH=${PWD}/3dsv/bin"
 Environment=FLASK_CONFIG=production
-ExecStart=/home/${USER}/3dsv/bin/uwsgi --ini ${PWD}/uwsgi.ini
+EnvironmentFile=${PWD}/.env
+ExecStart=${PWD}/3dsv/bin/uwsgi --ini ${PWD}/uwsgi.ini
 [Install]
 WantedBy=multi-user.target
 EOF

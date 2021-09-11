@@ -8,7 +8,9 @@ psycopg2
 SQLAlchemy-serializer
 jsonschema
 email_validator
+celery
 bcrypt
+cryptography
 python-dotenv
 requests
 requests_toolbelt
