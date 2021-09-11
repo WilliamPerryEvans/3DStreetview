@@ -34,6 +34,13 @@ class UserModelView(ModelView):
         if not self.is_accessible():
             return redirect(url_for("security.login"))
 
+class AdminModelView(ModelView):
+    def is_accessible(self):
+        return current_user.is_active and current_user.is_authenticated and current_user.has_role('admin')
+
+    def _handle_view(self, name):
+        if not self.is_accessible():
+            return redirect(url_for("security.login"))
 
 # Extend this view class for views which should only be available for logged in users.
 class UserView(admin.BaseView):

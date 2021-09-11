@@ -44,6 +44,7 @@ class Mesh(Base, SerializerMixin):
     # project = relationship("Project")
     odmproject = relationship("Odmproject")
     odkproject = relationship("Odkproject")
+    user = relationship("User")
 
     def __str__(self):
         return "{}".format(self.name)

@@ -2,6 +2,7 @@ import os
 from cryptography.fernet import Fernet
 from sqlalchemy import Integer, ForeignKey, String, Column, event, LargeBinary
 from sqlalchemy_serializer import SerializerMixin
+from sqlalchemy.orm import relationship
 from models.base import Base
 from odk2odm import odm_requests
 
@@ -19,6 +20,7 @@ class Odm(Base, SerializerMixin):
     user = Column(String, default=None)
     password_encrypt = Column(LargeBinary, default=None)  # encrypted password
     timeout = Column(Integer, default=30)  # timeout in seconds
+    app_user = relationship("User")  # user of 3DSV
 
     def __str__(self):
         return "{}".format(self.name)

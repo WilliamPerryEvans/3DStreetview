@@ -16,9 +16,11 @@ class Odk(Base, SerializerMixin):
     name = Column(String, nullable=False)
     host = Column(String, nullable=False)
     port = Column(Integer, nullable=False, default=443)  #
-    user = Column(String, default=None)  # token string to allow login
+    user = Column(String, default=None)  # user of ODK server
     password_encrypt = Column(LargeBinary, default=None)  # encrypted password
     timeout = Column(Integer, default=30)  # timeout in seconds
+    app_user = relationship("User")  # user of 3DSV
+
 
     def __str__(self):
         return "{}".format(self.name)

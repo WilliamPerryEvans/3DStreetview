@@ -1,1 +1,10 @@
 {% extends 'admin/model/create.html' %}
+{% block body %}
+<div class="row">
+    <div class="col">
+        <div class="container">
+            <h2>ODK Server configurations</h2><span>Provide your ODK server details below. </span><hr></div>
+    </div>
+</div>
+{{ super() }}
+{% endblock %}
