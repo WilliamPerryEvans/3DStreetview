@@ -351,40 +351,42 @@ function update_upload() {
     prog.textContent = ``;
     $.getJSON(url,
         function(mesh) {
-            url = `/api/status/${mesh.current_task}`
-            $.getJSON(
-                url,
-                function(task) {
-                    $('#upload_title').text(`${task.state}: ${task.status}`);
-                    if (task["state"] == "SUCCESS"){
-                        prog.style = `width: 100%`;
-                        prog.textContent = `Upload completed`;
-                        update_odm_task();
+            if (`${mesh.current_task}` != "null") {
+                url = `/api/status/${mesh.current_task}`
+                $.getJSON(
+                    url,
+                    function(task) {
+                        $('#upload_title').text(`${task.state}: ${task.status}`);
+                        if (task["state"] == "SUCCESS"){
+                            prog.style = `width: 100%`;
+                            prog.textContent = `Upload completed`;
+                            update_odm_task();
 
 
-                    } else if (task["state"] == "PENDING") {
-                        console.log("Upload is pending")
-                        prog.style = `width: 0%`;
-                        prog.textContent = `Uploading pending`;
-                        $('#upload_title').text("Upload pending...");
-                        setTimeout(function() {
-                            // keep on refreshing until upload's done
-                            update_upload();
-                        }, 2000);
-                    } else {
-                        // upload is busy, make sure that no jobs can be started, stopped or deleted
-                        document.getElementById('odm_commit').disabled = true
-                        document.getElementById('odm_cancel').disabled = true
-                        document.getElementById('odm_delete').disabled = true
-                        prog.style = `width: ${task.current/task.total*100}%`
-                        prog.textContent = `${task.current}/${task.total}`;
-                        setTimeout(function() {
-                            // keep on refreshing until upload's done
-                            update_upload();
-                        }, 2000);
+                        } else if (task["state"] == "PENDING") {
+                            console.log("Upload is pending")
+                            prog.style = `width: 0%`;
+                            prog.textContent = `Uploading pending`;
+                            $('#upload_title').text("Upload pending...");
+                            setTimeout(function() {
+                                // keep on refreshing until upload's done
+                                update_upload();
+                            }, 2000);
+                        } else {
+                            // upload is busy, make sure that no jobs can be started, stopped or deleted
+                            document.getElementById('odm_commit').disabled = true
+                            document.getElementById('odm_cancel').disabled = true
+                            document.getElementById('odm_delete').disabled = true
+                            prog.style = `width: ${task.current/task.total*100}%`
+                            prog.textContent = `${task.current}/${task.total}`;
+                            setTimeout(function() {
+                                // keep on refreshing until upload's done
+                                update_upload();
+                            }, 2000);
+                        }
                     }
-                }
-            );
+                );
+            }
         }
     );
 }
