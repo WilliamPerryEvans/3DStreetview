@@ -353,6 +353,10 @@ main() {
                                                  setup_portal                 && \
                                                  setup_worker                    ;fi
     done
+    # make 100% sure that port 22 stays open
+    sudo ufw allow 22
+    # Re-enable firewall
+    sudo ufw enable
 }
 
 main "$@"
