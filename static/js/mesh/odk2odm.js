@@ -112,9 +112,9 @@ function get_odm_tasks() {
             if (data.status == 403) {
                 flashMessage([{"type": "danger", "message": "ODM server authorization not accepted. Did you change username or password?"}]);
             } else if (data.status == 404) {
-                flashMessage([{"type": "danger", "message": "Server not available"}]);
+                flashMessage([{"type": "danger", "message": "ODM server not available"}]);
             } else {
-                flashMessage([{"type": "danger", "message": `Server responded with`}]);
+                flashMessage([{"type": "danger", "message": `Server responded with ${data.status} ${data.statusText}`]);
             }
         }
     });

@@ -28,7 +28,7 @@ function get_odk_projects()
                     option.value = x.id;
                     project_select.add(option);
                 });
-                flashMessage([{"type": "success", "message": "Server found"}]);
+                flashMessage([{"type": "success", "message": "ODK server found"}]);
             }
             document.getElementById("odk_project_create").disabled = false;
             document.getElementById("odk_project_delete").disabled = false;
@@ -40,7 +40,7 @@ function get_odk_projects()
         console.log(data2)
         console.log(data3)
         // flash a message in case everything fails
-        flashMessage([{"type": "danger", "message": "Server not available"}]);
+        flashMessage([{"type": "danger", "message": "ODK server not available"}]);
     });
 };
 
@@ -67,7 +67,7 @@ function get_odm_projects()
                 option.value = x.id;
                 project_select.add(option);
             });
-            flashMessage([{"type": "success", "message": "Server found"}]);
+            flashMessage([{"type": "success", "message": "ODM server found"}]);
             document.getElementById("odm_project_create").disabled = false;
             document.getElementById("odm_project_delete").disabled = false;
         },
@@ -76,34 +76,13 @@ function get_odm_projects()
             if (data.status == 403) {
                 flashMessage([{"type": "danger", "message": "ODM server authorization not accepted. Did you change username or password?"}]);
             } else if (data.status == 404) {
-                flashMessage([{"type": "danger", "message": "Server not available"}]);
+                flashMessage([{"type": "danger", "message": "ODM server not available"}]);
             } else {
-                flashMessage([{"type": "danger", "message": `Server responded with`}]);
+                flashMessage([{"type": "danger", "message": `ODM Server responded with ${data.status} ${data.statusText}`]);
             }
         }
 
     });
-//    $.getJSON(
-//        `/api/odm/${odmconfig_id}/projects`,
-//        function(data) {
-//            // populate the project dropdown with results
-//            console.log(data)
-//            data.forEach(function(x) {
-//                var option = document.createElement("option");
-//                option.text = x.name;
-//                option.value = x.id;
-//                project_select.add(option);
-//            });
-//            flashMessage([{"type": "success", "message": "Server found"}]);
-//            document.getElementById("odm_project_create").disabled = false;
-//            document.getElementById("odm_project_delete").disabled = false;
-//
-//        }
-//    )
-//    .fail(function() {
-//        // flash a message in case everything fails
-//        flashMessage([{"type": "danger", "message": "Server not available"}]);
-//    });
 };
 
 function save_odm_project() {

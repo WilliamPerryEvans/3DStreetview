@@ -20,11 +20,20 @@ function openTab(evt, tabName) {
 }
 
 var flashMessage = function(data){
-  html = '';
+//  html = '';
+  html = document.getElementById("flash").innerHTML;
   for (i=0; i<data.length; i++) {
     html += '<div class="alert alert-' + data[i]['type'] + '"><a href="#" class="close" data-dismiss="alert">&times;</a>' + data[i].message + '</div>';
   }
   document.getElementById("flash").innerHTML = html;
+  setTimeout(function() {
+    $(".alert").fadeTo(500, 0).slideUp(500, function(){
+        $(this).remove();
+    });
+  }, 4000);
+//  setTimeout(function() {
+//      $(".alert").alert('close');
+//  }, 2000);
 //  return html;
 };
 
