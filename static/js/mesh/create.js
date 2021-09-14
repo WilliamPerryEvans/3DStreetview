@@ -78,7 +78,7 @@ function get_odm_projects()
             } else if (data.status == 404) {
                 flashMessage([{"type": "danger", "message": "ODM server not available"}]);
             } else {
-                flashMessage([{"type": "danger", "message": `ODM Server responded with ${data.status} ${data.statusText}`]);
+                flashMessage([{"type": "danger", "message": `ODM Server responded with ${data.status} ${data.statusText}`}]);
             }
         }
 
