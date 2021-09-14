@@ -43,7 +43,10 @@ class Odm(Base, SerializerMixin):
         :return:
         """
         res = odm_requests.get_token_auth(self.url, self.user, self.password)
-        return res.json()['token']
+        if res.status_code == 400:
+            return None
+        else:
+            return res.json()['token']
 
     @property
     def password(self):

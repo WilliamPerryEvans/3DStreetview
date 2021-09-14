@@ -1,8 +1,9 @@
-from flask import has_app_context
+from flask import has_app_context, flash
 from flask_security import current_user
 from wtforms import ValidationError, PasswordField
 from views.general import UserModelView
 from models.odm import Odm
+from sqlalchemy.exc import IntegrityError
 
 class OdmconfigView(UserModelView):
     @property
@@ -72,13 +73,6 @@ class OdmconfigView(UserModelView):
     }
     column_descriptions = {
     }
-    form_columns = (
-        Odm.name,
-        Odm.host,
-        Odm.port,
-        Odm.user,
-        "password_encrypt",
-    )
     form_extra_fields = {
         "password_encrypt": PasswordField("Password")
     }
@@ -123,3 +117,16 @@ class OdmconfigView(UserModelView):
         """
         if is_created:
             model.user_id = current_user.id
+
+    def handle_view_exception(self, e):
+        """
+        Human readable error message for database integrity errors.
+
+        :param e:
+        :return:
+        """
+        if isinstance(e, IntegrityError):
+            flash("ODK config cannot be deleted since it is being used by one or more meshes. You will need to delete those meshes first.", "error")
+            return True
+
+        return super(OdmconfigView, self).handle_view_exception(e)

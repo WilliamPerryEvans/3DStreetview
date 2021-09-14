@@ -25,15 +25,24 @@ function get_odk_forms() {
         function(data) {
             // populate the project dropdown with results
             console.log(data);
-            // fill drop down with ODK forms
-            data.forEach(function(form) {
-                var option = document.createElement("option");
-                option.text = `Name: ${form.name} Version: ${form.version}`;
-                option.value = form.xmlFormId;
-                form_select.add(option);
+            if ("code" in data) {
+                if (data.code == 401.2) {
+                    flashMessage([{"type": "danger", "message": "ODK server authorization not accepted. Did you change username or password?"}]);
+                } else {
+                    // something else went wrong, report that!
+                    flashMessage([{"type": "danger", "message": data.message}]);
+                }
+            } else {
+                // fill drop down with ODK forms
+                data.forEach(function(form) {
+                    var option = document.createElement("option");
+                    option.text = `Name: ${form.name} Version: ${form.version}`;
+                    option.value = form.xmlFormId;
+                    form_select.add(option);
 
-            });
-            flashMessage([{"type": "success", "message": "Retrieved forms"}]);
+                });
+                flashMessage([{"type": "success", "message": "Retrieved forms"}]);
+            }
         }
     )
     .fail(function() {
@@ -49,11 +58,19 @@ function get_submissions() {
     $.getJSON(
         url,
         function(submissions) {
-            // get the list of attachments per submission
             console.log(submissions);
-            // fill bootstrap table
-            $('#submissions').bootstrapTable('load', submissions)
-            flashMessage([{"type": "success", "message": "Retrieved submissions"}]);
+            if ("code" in submissions) {
+                if (submissions.code == 401.2) {
+                    flashMessage([{"type": "danger", "message": "ODK server authorization not accepted. Did you change username or password?"}]);
+                } else {
+                    // something else went wrong, report that!
+                    flashMessage([{"type": "danger", "message": submissions.message}]);
+                }
+            } else {
+                // fill bootstrap table
+                $('#submissions').bootstrapTable('load', submissions)
+                flashMessage([{"type": "success", "message": "Retrieved submissions"}]);
+            }
         }
     )
     .fail(function() {
@@ -71,9 +88,10 @@ function get_odm_tasks() {
     // clear current tasks in dropdown
     removeOptions(task_select);
     addDisabledOption(task_select);
-    $.getJSON(
-        `/api/odm/${odmconfig_id}/projects/${odmproject_id}`,
-        function(data) {
+    $.ajax({
+        url: `/api/odm/${odmconfig_id}/projects/${odmproject_id}`,
+        dataType: "json",
+        success: function(data) {
             // populate the project dropdown with results
             data.tasks.forEach(function(x) {
                 $.getJSON(
@@ -84,16 +102,45 @@ function get_odm_tasks() {
                         option.value = task.id;
                         task_select.add(option);
                 });
-            }),
+            });
             flashMessage([{"type": "success", "message": "Retrieved tasks"}]);
             document.getElementById("task_create_button").disabled = false;
             document.getElementById("task_delete_button").disabled = false;
+        },
+        error: function(data) {
+            console.log(data);
+            if (data.status == 403) {
+                flashMessage([{"type": "danger", "message": "ODM server authorization not accepted. Did you change username or password?"}]);
+            } else if (data.status == 404) {
+                flashMessage([{"type": "danger", "message": "Server not available"}]);
+            } else {
+                flashMessage([{"type": "danger", "message": `Server responded with`}]);
+            }
         }
-    )
-    .fail(function() {
-        // flash a message in case everything fails
-        flashMessage([{"type": "danger", "message": "Not able to retrieve tasks"}]);
     });
+//    $.getJSON(
+//        `/api/odm/${odmconfig_id}/projects/${odmproject_id}`,
+//        function(data) {
+//            // populate the project dropdown with results
+//            data.tasks.forEach(function(x) {
+//                $.getJSON(
+//                    `/api/odm/${odmconfig_id}/projects/${odmproject_id}/tasks/${x}`,
+//                    function(task) {
+//                        var option = document.createElement("option");
+//                        option.text = `Name: ${task.name} id: ${task.id}`;
+//                        option.value = task.id;
+//                        task_select.add(option);
+//                });
+//            }),
+//            flashMessage([{"type": "success", "message": "Retrieved tasks"}]);
+//            document.getElementById("task_create_button").disabled = false;
+//            document.getElementById("task_delete_button").disabled = false;
+//        }
+//    )
+//    .fail(function() {
+//        // flash a message in case everything fails
+//        flashMessage([{"type": "danger", "message": "Not able to retrieve tasks"}]);
+//    });
 }
 
 function update_odm_task() {

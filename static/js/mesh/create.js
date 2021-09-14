@@ -13,20 +13,32 @@ function get_odk_projects()
         `/api/odk/${odkconfig_id}/projects`,
         function(data) {
             console.log(data);
-            // populate the project dropdown with results
-            data.forEach(function(x) {
-                var option = document.createElement("option");
-                option.text = x.name;
-                option.value = x.id;
-                project_select.add(option);
-            });
-            flashMessage([{"type": "success", "message": "Server found"}]);
+            if ("code" in data) {
+                if (data.code == 401.2) {
+                    flashMessage([{"type": "danger", "message": "ODK server authorization not accepted. Did you change username or password?"}]);
+                } else {
+                    // something else went wrong, report that!
+                    flashMessage([{"type": "danger", "message": data.message}]);
+                }
+            } else {
+                // populate the project dropdown with results
+                data.forEach(function(x) {
+                    var option = document.createElement("option");
+                    option.text = x.name;
+                    option.value = x.id;
+                    project_select.add(option);
+                });
+                flashMessage([{"type": "success", "message": "Server found"}]);
+            }
             document.getElementById("odk_project_create").disabled = false;
             document.getElementById("odk_project_delete").disabled = false;
 
         }
     )
     .fail(function() {
+        console.log(data)
+        console.log(data2)
+        console.log(data3)
         // flash a message in case everything fails
         flashMessage([{"type": "danger", "message": "Server not available"}]);
     });
@@ -43,9 +55,10 @@ function get_odm_projects()
     var project_select = document.getElementById("odm_project");
     removeOptions(project_select);
     addDisabledOption(project_select);
-    $.getJSON(
-        `/api/odm/${odmconfig_id}/projects`,
-        function(data) {
+    $.ajax({
+        url: `/api/odm/${odmconfig_id}/projects`,
+        dataType: "json",
+        success: function(data) {
             // populate the project dropdown with results
             console.log(data)
             data.forEach(function(x) {
@@ -57,13 +70,40 @@ function get_odm_projects()
             flashMessage([{"type": "success", "message": "Server found"}]);
             document.getElementById("odm_project_create").disabled = false;
             document.getElementById("odm_project_delete").disabled = false;
-
+        },
+        error: function(data) {
+            console.log(data);
+            if (data.status == 403) {
+                flashMessage([{"type": "danger", "message": "ODM server authorization not accepted. Did you change username or password?"}]);
+            } else if (data.status == 404) {
+                flashMessage([{"type": "danger", "message": "Server not available"}]);
+            } else {
+                flashMessage([{"type": "danger", "message": `Server responded with`}]);
+            }
         }
-    )
-    .fail(function() {
-        // flash a message in case everything fails
-        flashMessage([{"type": "danger", "message": "Server not available"}]);
+
     });
+//    $.getJSON(
+//        `/api/odm/${odmconfig_id}/projects`,
+//        function(data) {
+//            // populate the project dropdown with results
+//            console.log(data)
+//            data.forEach(function(x) {
+//                var option = document.createElement("option");
+//                option.text = x.name;
+//                option.value = x.id;
+//                project_select.add(option);
+//            });
+//            flashMessage([{"type": "success", "message": "Server found"}]);
+//            document.getElementById("odm_project_create").disabled = false;
+//            document.getElementById("odm_project_delete").disabled = false;
+//
+//        }
+//    )
+//    .fail(function() {
+//        // flash a message in case everything fails
+//        flashMessage([{"type": "danger", "message": "Server not available"}]);
+//    });
 };
 
 function save_odm_project() {
