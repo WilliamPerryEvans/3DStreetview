@@ -41,7 +41,7 @@ function get_odk_forms() {
                     form_select.add(option);
 
                 });
-                flashMessage([{"type": "success", "message": "Retrieved forms"}]);
+                flashMessage([{"type": "success", "message": "Retrieved ODK forms"}]);
             }
         }
     )
@@ -103,7 +103,7 @@ function get_odm_tasks() {
                         task_select.add(option);
                 });
             });
-            flashMessage([{"type": "success", "message": "Retrieved tasks"}]);
+            flashMessage([{"type": "success", "message": "Retrieved ODM tasks"}]);
             document.getElementById("task_create_button").disabled = false;
             document.getElementById("task_delete_button").disabled = false;
         },
