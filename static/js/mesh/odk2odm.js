@@ -114,33 +114,10 @@ function get_odm_tasks() {
             } else if (data.status == 404) {
                 flashMessage([{"type": "danger", "message": "ODM server not available"}]);
             } else {
-                flashMessage([{"type": "danger", "message": `Server responded with ${data.status} ${data.statusText}`]);
+                flashMessage([{"type": "danger", "message": `Server responded with ${data.status} ${data.statusText}`}]);
             }
         }
     });
-//    $.getJSON(
-//        `/api/odm/${odmconfig_id}/projects/${odmproject_id}`,
-//        function(data) {
-//            // populate the project dropdown with results
-//            data.tasks.forEach(function(x) {
-//                $.getJSON(
-//                    `/api/odm/${odmconfig_id}/projects/${odmproject_id}/tasks/${x}`,
-//                    function(task) {
-//                        var option = document.createElement("option");
-//                        option.text = `Name: ${task.name} id: ${task.id}`;
-//                        option.value = task.id;
-//                        task_select.add(option);
-//                });
-//            }),
-//            flashMessage([{"type": "success", "message": "Retrieved tasks"}]);
-//            document.getElementById("task_create_button").disabled = false;
-//            document.getElementById("task_delete_button").disabled = false;
-//        }
-//    )
-//    .fail(function() {
-//        // flash a message in case everything fails
-//        flashMessage([{"type": "danger", "message": "Not able to retrieve tasks"}]);
-//    });
 }
 
 function update_odm_task() {
