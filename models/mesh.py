@@ -4,6 +4,9 @@ from sqlalchemy import Integer, ForeignKey, String, Column, Enum, Float, event
 from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.orm import relationship
 from models.base import Base
+from models.odkproject import Odkproject
+from models.odmproject import Odmproject
+
 from models.elements.unzipmesh import unzipmesh
 
 class MeshStatus(enum.Enum):
@@ -53,20 +56,13 @@ class Mesh(Base, SerializerMixin):
     def __repr__(self):
         return "{}: {}".format(self.id, self.__str__())
 
-# @event.listens_for(Mesh, "after_insert")
-# @event.listens_for(Mesh, "after_update")
-# def receive_after_update(mapper, connection, target):
-#     """
-#     event listener, to be executed when a zipfile is provided for upload
-#     """
-#     src_path = "mesh"
-#     trg_path = f"static/{src_path}/{target.id}"
-#     if target.zipfile is not None:
-#         zipfile = os.path.join(src_path, target.zipfile)
-#         if not(os.path.isfile(zipfile)):
-#             raise IOError(f"File {zipfile} does not exist")
-#         unzipmesh(zipfile, trg_path=trg_path, mesh_name="unity")
-#         # no processing needed, so set Mesh status to finished immediately
-#         print("Set Mesh status to 'Finished'")
-#         target.status = 3
-#
+@event.listens_for(Mesh, 'after_delete')
+def receive_after_update(mapper, connection, target):
+    """
+    event listener, to be executed when a Mesh is deleted
+    Also delete the associated odm project and odk project from local dbase
+
+    """
+    Odkproject.query.filter(Odkproject.id == target.odkproject_id).delete()
+    Odmproject.query.filter(Odmproject.id == target.odmproject_id).delete()
+
