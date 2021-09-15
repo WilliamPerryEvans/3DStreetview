@@ -32,7 +32,10 @@ class Odkproject(Base, SerializerMixin):
 
     @property
     def project(self):
-        return odk_requests.project(self.odk.url, aut=(self.odk.user, self.odk.password), projectId=self.remote_id).json()
+        try:
+            return odk_requests.project(self.odk.url, aut=(self.odk.user, self.odk.password), projectId=self.remote_id).json()
+        except:
+            return {"name": f"WARNING: Project could not be retrieved"}
 
     def __str__(self):
         return "{}".format(self.remote_id)

@@ -52,6 +52,8 @@ def get_projects(id):
         return odm
     try:
         res = odm_requests.get_projects(odm.url, odm.token)
+        if res.status_code == 403:
+            return f"Authentication failed", 403
         return jsonify(res.json())
     except:
         return f"Retrieval from {odm.url} failed", 404
@@ -70,6 +72,8 @@ def get_project(id, project_id):
         return odm
     try:
         res = odm_requests.get_project(odm.url, odm.token, project_id)
+        if res.status_code == 403:
+            return f"Authentication failed", 403
         return jsonify(res.json())
     except:
         return f"Page {odm.url} does not exist", 404

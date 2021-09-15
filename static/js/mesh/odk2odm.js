@@ -25,15 +25,24 @@ function get_odk_forms() {
         function(data) {
             // populate the project dropdown with results
             console.log(data);
-            // fill drop down with ODK forms
-            data.forEach(function(form) {
-                var option = document.createElement("option");
-                option.text = `Name: ${form.name} Version: ${form.version}`;
-                option.value = form.xmlFormId;
-                form_select.add(option);
+            if ("code" in data) {
+                if (data.code == 401.2) {
+                    flashMessage([{"type": "danger", "message": "ODK server authorization not accepted. Did you change username or password?"}]);
+                } else {
+                    // something else went wrong, report that!
+                    flashMessage([{"type": "danger", "message": data.message}]);
+                }
+            } else {
+                // fill drop down with ODK forms
+                data.forEach(function(form) {
+                    var option = document.createElement("option");
+                    option.text = `Name: ${form.name} Version: ${form.version}`;
+                    option.value = form.xmlFormId;
+                    form_select.add(option);
 
-            });
-            flashMessage([{"type": "success", "message": "Retrieved forms"}]);
+                });
+                flashMessage([{"type": "success", "message": "Retrieved ODK forms"}]);
+            }
         }
     )
     .fail(function() {
@@ -49,11 +58,19 @@ function get_submissions() {
     $.getJSON(
         url,
         function(submissions) {
-            // get the list of attachments per submission
             console.log(submissions);
-            // fill bootstrap table
-            $('#submissions').bootstrapTable('load', submissions)
-            flashMessage([{"type": "success", "message": "Retrieved submissions"}]);
+            if ("code" in submissions) {
+                if (submissions.code == 401.2) {
+                    flashMessage([{"type": "danger", "message": "ODK server authorization not accepted. Did you change username or password?"}]);
+                } else {
+                    // something else went wrong, report that!
+                    flashMessage([{"type": "danger", "message": submissions.message}]);
+                }
+            } else {
+                // fill bootstrap table
+                $('#submissions').bootstrapTable('load', submissions)
+                flashMessage([{"type": "success", "message": "Retrieved submissions"}]);
+            }
         }
     )
     .fail(function() {
@@ -71,9 +88,10 @@ function get_odm_tasks() {
     // clear current tasks in dropdown
     removeOptions(task_select);
     addDisabledOption(task_select);
-    $.getJSON(
-        `/api/odm/${odmconfig_id}/projects/${odmproject_id}`,
-        function(data) {
+    $.ajax({
+        url: `/api/odm/${odmconfig_id}/projects/${odmproject_id}`,
+        dataType: "json",
+        success: function(data) {
             // populate the project dropdown with results
             data.tasks.forEach(function(x) {
                 $.getJSON(
@@ -84,15 +102,21 @@ function get_odm_tasks() {
                         option.value = task.id;
                         task_select.add(option);
                 });
-            }),
-            flashMessage([{"type": "success", "message": "Retrieved tasks"}]);
+            });
+            flashMessage([{"type": "success", "message": "Retrieved ODM tasks"}]);
             document.getElementById("task_create_button").disabled = false;
             document.getElementById("task_delete_button").disabled = false;
+        },
+        error: function(data) {
+            console.log(data);
+            if (data.status == 403) {
+                flashMessage([{"type": "danger", "message": "ODM server authorization not accepted. Did you change username or password?"}]);
+            } else if (data.status == 404) {
+                flashMessage([{"type": "danger", "message": "ODM server not available"}]);
+            } else {
+                flashMessage([{"type": "danger", "message": `Server responded with ${data.status} ${data.statusText}`}]);
+            }
         }
-    )
-    .fail(function() {
-        // flash a message in case everything fails
-        flashMessage([{"type": "danger", "message": "Not able to retrieve tasks"}]);
     });
 }
 
@@ -347,44 +371,52 @@ function update_upload() {
     url = `/api/mesh/${id}`;
     $('#upload_title').text("Upload progress");
     prog = document.getElementById('upload_progress')
-    prog.style = `width: 0%`;
-    prog.textContent = ``;
     $.getJSON(url,
         function(mesh) {
-            url = `/api/status/${mesh.current_task}`
-            $.getJSON(
-                url,
-                function(task) {
-                    $('#upload_title').text(`${task.state}: ${task.status}`);
-                    if (task["state"] == "SUCCESS"){
-                        prog.style = `width: 100%`;
-                        prog.textContent = `Upload completed`;
-                        update_odm_task();
+            if (`${mesh.current_task}` != "null") {
+                url = `/api/status/${mesh.current_task}`
+                $.getJSON(
+                    url,
+                    function(task) {
+                        $('#upload_title').text(`${task.state}: ${task.status}`);
+                        if (task["state"] == "SUCCESS"){
+                            prog.style = `width: 100%`;
+                            prog.textContent = `Upload completed`;
+                            update_odm_task();
 
 
-                    } else if (task["state"] == "PENDING") {
-                        console.log("Upload is pending")
-                        prog.style = `width: 0%`;
-                        prog.textContent = `Uploading pending`;
-                        $('#upload_title').text("Upload pending...");
-                        setTimeout(function() {
-                            // keep on refreshing until upload's done
-                            update_upload();
-                        }, 2000);
-                    } else {
-                        // upload is busy, make sure that no jobs can be started, stopped or deleted
-                        document.getElementById('odm_commit').disabled = true
-                        document.getElementById('odm_cancel').disabled = true
-                        document.getElementById('odm_delete').disabled = true
-                        prog.style = `width: ${task.current/task.total*100}%`
-                        prog.textContent = `${task.current}/${task.total}`;
-                        setTimeout(function() {
-                            // keep on refreshing until upload's done
-                            update_upload();
-                        }, 2000);
+                        } else if (task["state"] == "PENDING") {
+                            console.log("Upload is pending")
+                            prog.style = `width: 0%`;
+                            prog.textContent = `Uploading pending`;
+                            $('#upload_title').text("Upload pending...");
+                            setTimeout(function() {
+                                // keep on refreshing until upload's done
+                                update_upload();
+                            }, 2000);
+                        } else if (task["state"] == "FAILURE") {
+                            console.log("Upload failed")
+                            prog.style = `width: 0%`;
+                            prog.textContent = `Upload failed, please retry`;
+                            $('#upload_title').text("Upload failed...");
+                        } else {
+                            // upload is busy, make sure that no jobs can be started, stopped or deleted
+                            document.getElementById('odm_commit').disabled = true
+                            document.getElementById('odm_cancel').disabled = true
+                            document.getElementById('odm_delete').disabled = true
+                            prog.style = `width: ${task.current/task.total*100}%`
+                            prog.textContent = `${task.current}/${task.total}`;
+                            setTimeout(function() {
+                                // keep on refreshing until upload's done
+                                update_upload();
+                            }, 2000);
+                        }
                     }
-                }
-            );
+                );
+            } else {
+                prog.style = `width: 0%`;
+                prog.textContent = ``;
+            }
         }
     );
 }

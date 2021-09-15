@@ -19,7 +19,11 @@ class Odmproject(Base, SerializerMixin):
 
     @property
     def project(self):
-        return odm_requests.get_project(self.odm.url, token=self.odm.token, project_id=self.remote_id).json()
+        try:
+            return odm_requests.get_project(self.odm.url, token=self.odm.token, project_id=self.remote_id).json()
+        except:
+            return {"name": f"WARNING: Project could not be retrieved"}
+
 
 
 
