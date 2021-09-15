@@ -173,6 +173,7 @@ function update_odm_task() {
                         $("#odm_download").click();
 
                     }
+                flashMessage([{"type": "success", "message": `Retrieved task ${task_id}`}]);
                 } else {
                     $("#odm_commit").html("<i class=\"fas fa-cog fa-spin\"></i> Task running")
                     setTimeout(function() {
@@ -181,7 +182,6 @@ function update_odm_task() {
                 }
             }
         );
-        flashMessage([{"type": "success", "message": `Retrieved task ${task_id}`}]);
         document.getElementById("task_create_button").disabled = false;
         document.getElementById("task_delete_button").disabled = false;
     }
@@ -215,11 +215,41 @@ function delete_odm_task() {
 function create_odm_task() {
     // create a new odm task in selected odm project via a HTML modal
     // get current id of mesh
+    // TODO: make the options more flexible. Now we set a number of pre-defined options that work for streetview
+    options = [{
+        "name": "dsm",
+        "value": true
+    },
+    {
+        "name": "dtm",
+        "value": true
+    },
+    {
+        "name": "matcher-distance",
+        "value": 20
+    },
+    {
+        "name": "matcher-neighbors",
+        "value": 800
+    },
+    {
+        "name": "pc-geometric",
+        "value": true
+    }
+    ];
+
+//    options = {
+//        "dsm": true,
+//        "dtm": true,
+//        "matcher-distance": 20,
+//        "matcher-neighbors": 800,
+//        "pc-geometric": true
+//    }
     const task_name = $('input#odm_task_name').val();
     content = {
         "name": task_name,
         "partial": true,
-        "options": {}
+        "options": options
     }
     $.ajax({
         type: 'POST',
@@ -253,6 +283,7 @@ function commit_odm_task() {
     if (task_data.status == 50 || task_data.status == 40) {
         url = `/api/odm/${odmconfig_id}/projects/${odmproject_id}/tasks/${task_id}/restart/`
     } else {
+        // for now hardcode the settings, this needs to be changed later on
         url = `/api/odm/${odmconfig_id}/projects/${odmproject_id}/tasks/${task_id}/commit/`
     }
     console.log(url);

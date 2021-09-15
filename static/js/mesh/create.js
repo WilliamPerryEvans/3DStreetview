@@ -36,9 +36,6 @@ function get_odk_projects()
         }
     )
     .fail(function() {
-        console.log(data)
-        console.log(data2)
-        console.log(data3)
         // flash a message in case everything fails
         flashMessage([{"type": "danger", "message": "ODK server not available"}]);
     });
