@@ -25,7 +25,15 @@ class Odmproject(Base, SerializerMixin):
             return {"name": f"WARNING: Project could not be retrieved"}
 
 
-
+    def upload_file(self, task_id, fields):
+        """
+        Uploads a file to odm project to selected task
+        :param task_id: str (uuid) - the uuid belonging to the task to retrieve
+        :param fields: dict - must contain the following recipe: {"images": <name of image file.JPG>, <bytestream of image>, 'image/jpg')}
+        :return: http response
+        """
+        res = odm_requests.post_upload(self.odm.url, self.odm.token, self.remote_id, task_id, fields)
+        return res
 
     def __str__(self):
         return "{}".format(self.remote_id)

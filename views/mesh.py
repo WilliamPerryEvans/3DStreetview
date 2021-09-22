@@ -1,3 +1,5 @@
+import io
+
 from flask import request, redirect, flash, has_app_context
 from flask_security import current_user
 from flask_admin import expose
@@ -5,11 +7,17 @@ from flask_admin.babel import gettext
 from flask_admin.model.template import EndpointLinkRowAction
 from flask_admin.helpers import get_redirect_target
 from flask_admin.model.helpers import get_mdict_item_or_list
-from wtforms.fields import HiddenField
+from flask_wtf import FlaskForm
+from wtforms.fields import HiddenField, MultipleFileField, SubmitField
 from views.general import UserModelView
 from models.mesh import Mesh
 from models.odm import Odm
 from models.odk import Odk
+
+class UploadFiles(FlaskForm):
+    images = MultipleFileField('Select local Image(s)')
+    upload = SubmitField("Upload")
+
 
 class MeshView(UserModelView):
     def render(self, template, **kwargs):
@@ -103,7 +111,7 @@ class MeshView(UserModelView):
     edit_template = "mesh/edit.html"
     odk2odm_template = "mesh/odk2odm.html"
 
-    @expose("/odk2odm", methods=("GET",))
+    @expose("/odk2odm", methods=("GET", "POST"))
     def odk2odm(self):
         """The method you need to call"""
         """
@@ -125,16 +133,38 @@ class MeshView(UserModelView):
         if model is None:
             flash(gettext('Record does not exist.'), 'error')
             return redirect(return_url)
+        if request.method == "POST":
+            # TODO: retrieve details of current ODM server
+            print("Getting ODM details")
+            # upload files to ODM server
+            for f in request.files.getlist("images"):
+                print(f"Uploading file {f}")
+                f.stream.seek(0)
+                # TODO: prepare request
+                fields = {"images": (f.name, f.stream, "images/jpg")}
+                model.odmproject.upload_file(task_id=request.form["task_id"], fields=fields)
+            flash("Selected files successfully uploaded to ODM task")
+
 
         template = self.odk2odm_template
-
         return self.render(
             template,
             model=model,
             details_columns=self._details_columns,
             get_value=self.get_detail_value,
-            return_url=return_url
+            return_url=return_url,
+            form=UploadFiles()
         )
+    def get_action_form(self):
+        """
+        Override the action form to enable submission of local files
+
+        :return:
+        """
+        form = super(UserModelView, self).get_action_form()
+        form.files = MultipleFileField('Select local Image(s)')
+        form.upload = SubmitField("Upload")
+        return form
 
     def get_query(self):
         """

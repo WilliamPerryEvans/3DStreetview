@@ -1,6 +1,11 @@
-{% extends 'admin/model/details.html' %}
+{% extends 'admin/model/create.html' %}
+{% import 'admin/lib.html' as lib with context %}
+{% from 'admin/lib.html' import extra with context %} {# backward compatible #}
+
 {% block head %}
     <link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.18.3/dist/bootstrap-table.min.css">
+    {{ lib.form_css() }}
+
 {% endblock %}
 {% block body %}
 <input type="hidden" id="mesh_id" value="{{ model.id }}" />
@@ -125,6 +130,12 @@
                         </div>
                     </div>
                 </div>
+                <!-- expand wtform -->
+                {% call lib.form_tag(action=None) %}
+
+                {{ lib.render_form_fields(form, form_opts=form_opts) }}
+                {% endcall %}
+
             </div>
         </div>
     </div>
@@ -165,5 +176,6 @@
   <script src="{{ url_for('static', filename='js/mesh/odk2odm.js') }}"></script>
   <script src="https://unpkg.com/bootstrap-table@1.18.3/dist/bootstrap-table.min.js"></script>
   {{ super() }}
+
 {% endblock %}
 

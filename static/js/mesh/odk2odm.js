@@ -484,6 +484,22 @@ function mesh_to_game () {
     alert("This functionality is not yet implemented. If you want to retrieve the mesh, please go to the configured ODM server and project and download it from there.")
 }
 
+$('form.admin-form').submit(function( event ) {
+    const form = this;
+    event.preventDefault();
+    // add the current task_id to form
+    var task_select = document.getElementById("odm_task");
+    const task_id = task_select.value;
+    if (task_id != "null") {
+       $(form).append(`<input type="hidden" name="task_id" value="${task_id}">`);
+        console.log(form);
+        form.submit();
+    } else {
+        flashMessage([{"type": "danger", "message": "No ODM task selected"}]);
+    }
+});
+
+
 $( document ).ready(function() {
     update_upload();
     update_odm_task();
