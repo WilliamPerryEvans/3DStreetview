@@ -32,8 +32,13 @@ class Odmproject(Base, SerializerMixin):
         :param fields: dict - must contain the following recipe: {"images": <name of image file.JPG>, <bytestream of image>, 'image/jpg')}
         :return: http response
         """
-        res = odm_requests.post_upload(self.odm.url, self.odm.token, self.remote_id, task_id, fields)
-        return res
+        # check if file already exists
+        res = odm_requests.get_thumbnail(self.odm.url, self.odm.token, self.remote_id, task_id, filename=fields["images"][0])
+        if res.status_code == 200:
+            return "File already exists", 200
+        else:
+            res = odm_requests.post_upload(self.odm.url, self.odm.token, self.remote_id, task_id, fields)
+            return res
 
     def __str__(self):
         return "{}".format(self.remote_id)
