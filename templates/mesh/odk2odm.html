@@ -42,50 +42,6 @@
     </div>
 </div>
 <hr>
-<div class="row">
-    <div class="container">
-        <h5>ODK submissions</h5>
-        <span>ODK server location: <a href="{{ model.odkproject.odk.url }}">{{ model.odkproject.odk.url }}</a> </span><br>
-        <span>ODK project name: {{ model.odkproject.project['name'] }} </span><br><br>
-
-        <div class="form-group ">
-            <label for="odk_form" class="control-label">Select survey form</label>
-            <select class="form-control" data-role="select2" id="odk_form" onchange="get_submissions()" name="odk_form" required>
-            </select>
-        </div>
-    </div>
-</div>
-<div class="row">
-    <div class="container">
-        <table
-                id="submissions"
-                class="table table-striped table-bordered table-hover model-list"
-                data-toggle="table"
-                data-search="true"
-                data-side-pagination="server"
-                data-pagination="true"
-                data-page-size="25"
-                data-icons-prefix="fas"
-                data-buttons="buttons"
-                data-buttons-align="left"
-                data-search-align="left">
-          <thead>
-            <tr>
-              <th data-checkbox="true"></th>
-              <th data-field="instanceId" data-sortable="true">Submission ID</th>
-              <th data-field="createdAt" data-sortable="true">Created at</th>
-              <th data-field="deviceId" data-sortable="true">Device ID</th>
-              <th data-field="reviewState" data-sortable="true">Review State</th>
-              <th data-field="submitterId" data-sortable="true">Submitter ID</th>
-              <th data-field="updatedAt" data-sortable="true">Updated at</th>
-            </tr>
-          </thead>
-        </table>
-    </div>
-</div>
-
-<hr>
-
 <div class="container">
     <div class="row">
         <div class="col-4 border-right">
@@ -151,6 +107,50 @@
         </div>
     </div>
 </div>
+<hr>
+
+<div class="row">
+    <div class="container">
+        <h5>ODK submissions</h5>
+        <span>ODK server location: <a href="{{ model.odkproject.odk.url }}">{{ model.odkproject.odk.url }}</a> </span><br>
+        <span>ODK project name: {{ model.odkproject.project['name'] }} </span><br><br>
+
+        <div class="form-group ">
+            <label for="odk_form" class="control-label">Select survey form</label>
+            <select class="form-control" data-role="select2" id="odk_form" onchange="get_submissions()" name="odk_form" required>
+            </select>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="container">
+        <table
+                id="submissions"
+                class="table table-striped table-bordered table-hover model-list"
+                data-toggle="table"
+                data-search="true"
+                data-side-pagination="server"
+                data-pagination="true"
+                data-page-size="25"
+                data-icons-prefix="fas"
+                data-buttons="buttons"
+                data-buttons-align="left"
+                data-search-align="left">
+          <thead>
+            <tr>
+              <th data-checkbox="true"></th>
+              <th data-field="instanceId" data-sortable="true">Submission ID</th>
+              <th data-field="createdAt" data-sortable="true">Created at</th>
+              <th data-field="deviceId" data-sortable="true">Device ID</th>
+              <th data-field="reviewState" data-sortable="true">Review State</th>
+              <th data-field="submitterId" data-sortable="true">Submitter ID</th>
+              <th data-field="updatedAt" data-sortable="true">Updated at</th>
+            </tr>
+          </thead>
+        </table>
+    </div>
+</div>
+
 
     <!-- Modal for new ODM Task -->
     <div class="modal fade" id="newOdmTask" tabindex="-1" role="dialog" aria-labelledby="newOdmTaskLabel" aria-hidden="true">
