@@ -1,11 +1,22 @@
 {% extends 'admin/model/create.html' %}
-{% import 'admin/lib.html' as lib with context %}
-{% from 'admin/lib.html' import extra with context %} {# backward compatible #}
 
 {% block head %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/min/dropzone.min.css">
     <link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.18.3/dist/bootstrap-table.min.css">
-    {{ lib.form_css() }}
-
+    <style>
+        .dropzone {
+            background: white;
+            border-radius: 5px;
+            border: 2px dashed rgb(0, 135, 247);
+            border-image: none;
+            max-width: 650px;
+            height: 400px;
+            margin-top: 10px;
+            margin-right: auto;
+            overflow-y:auto;
+        }
+    </style>
+    {{ super() }}
 {% endblock %}
 {% block body %}
 <input type="hidden" id="mesh_id" value="{{ model.id }}" />
@@ -130,12 +141,12 @@
                         </div>
                     </div>
                 </div>
-                <!-- expand wtform -->
-                {% call lib.form_tag(action=None) %}
-
-                {{ lib.render_form_fields(form, form_opts=form_opts) }}
-                {% endcall %}
-
+                <form id="upload-widget" action="{{ url_for('mesh.odk2odm', id=model.id) }}" class="dropzone needsclick">
+                    <div id="dz-message" class="dz-message needsclick">
+                        Select ODM task to upload files<br>
+                    </div>
+                    <input id="odm_task_id" type="hidden" name="id" value="">
+                </form>
             </div>
         </div>
     </div>
@@ -173,8 +184,9 @@
 
 {% endblock %}
 {% block tail %}
-  <script src="{{ url_for('static', filename='js/mesh/odk2odm.js') }}"></script>
   <script src="https://unpkg.com/bootstrap-table@1.18.3/dist/bootstrap-table.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/min/dropzone.min.js"></script>
+  <script src="{{ url_for('static', filename='js/mesh/odk2odm.js') }}"></script>
   {{ super() }}
 
 {% endblock %}

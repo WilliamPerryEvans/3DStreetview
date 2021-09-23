@@ -137,14 +137,18 @@ class MeshView(UserModelView):
             # TODO: retrieve details of current ODM server
             print("Getting ODM details")
             # upload files to ODM server
-            for f in request.files.getlist("images"):
-                print(f"Uploading file {f}")
-                f.stream.seek(0)
-                # TODO: prepare request
-                fields = {"images": (f.name, f.stream, "images/jpg")}
-                model.odmproject.upload_file(task_id=request.form["task_id"], fields=fields)
-            flash("Selected files successfully uploaded to ODM task")
-
+            task_id = request.form["id"]
+            if task_id:
+                for f in request.files.getlist("file"):
+                    print(f"Uploading file {f}")
+                    f.stream.seek(0)
+                    # TODO: prepare request
+                    fields = {"images": (f.name, f.stream, "images/jpg")}
+                    model.odmproject.upload_file(task_id=request.form["id"], fields=fields)
+                flash("Selected files successfully uploaded to ODM task")
+            else:
+                flash("No ODM task selected yet", "error")
+                return redirect(return_url)
 
         template = self.odk2odm_template
         return self.render(
@@ -153,7 +157,6 @@ class MeshView(UserModelView):
             details_columns=self._details_columns,
             get_value=self.get_detail_value,
             return_url=return_url,
-            form=UploadFiles()
         )
     def get_action_form(self):
         """

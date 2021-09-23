@@ -9,8 +9,16 @@ var odk2odm_total = 0;
 var odk2odm_progress = 0;  // percentage of upload progress
 var task_data = {};
 
+var dropzone = new Dropzone('#upload-widget', {
+    parallelUploads: 10,
+    acceptedFiles: 'image/jpeg',
+    thumbnailHeight: 200,
+    thumbnailWidth: 200,
+    maxFilesize: 5
+  })
+$(".dz-hidden-input").prop("disabled",true);
+
 $(document).ready(function () {
-    // fill drop down
     get_odm_tasks();
     get_odk_forms();
 });
@@ -126,6 +134,10 @@ function update_odm_task() {
     var task_select = document.getElementById("odm_task");
     const task_id = task_select.value;
     if (task_id != "null") {
+        // enable local file upload
+        $(".dz-hidden-input").prop("disabled", false);
+        document.getElementById("dz-message").innerText = "Drag and drop JPG files to upload to ODM"
+
         document.getElementById("task_create_button").disabled = true;
         document.getElementById("task_delete_button").disabled = true;
         document.getElementById("odm_download").disabled = true;
@@ -136,6 +148,7 @@ function update_odm_task() {
                 console.log(data);
                 task_data = data;  // globalize current task data
                 // change content of status texts and bars
+                document.getElementById("odm_task_id").value = task_id;
                 $('#task_id span').text(`Task: ${task_id}`);
                 $('#images_count span').text(` ${data.images_count}`);
                 $('#processing_time span').text(` ${millisToMinutesAndSeconds(data.processing_time)}`);
@@ -238,13 +251,6 @@ function create_odm_task() {
     }
     ];
 
-//    options = {
-//        "dsm": true,
-//        "dtm": true,
-//        "matcher-distance": 20,
-//        "matcher-neighbors": 800,
-//        "pc-geometric": true
-//    }
     const task_name = $('input#odm_task_name').val();
     content = {
         "name": task_name,
@@ -484,23 +490,8 @@ function mesh_to_game () {
     alert("This functionality is not yet implemented. If you want to retrieve the mesh, please go to the configured ODM server and project and download it from there.")
 }
 
-$('form.admin-form').submit(function( event ) {
-    const form = this;
-    event.preventDefault();
-    // add the current task_id to form
-    var task_select = document.getElementById("odm_task");
-    const task_id = task_select.value;
-    if (task_id != "null") {
-       $(form).append(`<input type="hidden" name="task_id" value="${task_id}">`);
-        console.log(form);
-        form.submit();
-    } else {
-        flashMessage([{"type": "danger", "message": "No ODM task selected"}]);
-    }
-});
-
-
 $( document ).ready(function() {
     update_upload();
     update_odm_task();
+
 });
