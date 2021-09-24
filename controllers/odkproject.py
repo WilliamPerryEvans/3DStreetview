@@ -30,7 +30,7 @@ def before_request():
 def create_project():
     """
     API endpoint for posting a new ODK project that has a one-to-one relationship with a mesh
-
+    required kwargs are provided through the request content in json
     :return:
     """
     content = request.get_json(silent=True)
