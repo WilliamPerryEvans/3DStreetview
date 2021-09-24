@@ -14,7 +14,33 @@ var dropzone = new Dropzone('#upload-widget', {
     acceptedFiles: 'image/jpeg',
     thumbnailHeight: 200,
     thumbnailWidth: 200,
-    maxFilesize: 5
+    maxFilesize: 5,
+    error: function(file, message) {
+        console.log(`Error detected on file: ${file} msg: ${message}`)
+        if (file.previewElement) {
+          file.previewElement.classList.add("dz-error");
+          if (typeof message !== "string" && message.error) {
+            message = message.error;
+          }
+          for (let node of file.previewElement.querySelectorAll(
+            "[data-dz-errormessage]"
+          )) {
+            if (message.includes("304")) {
+                node.textContent = 'This file is already present on server';
+            } else {
+                node.textContent = message
+            }
+
+          }
+        }
+    },
+//    error: function(file, response) {
+//        console.log(`Error detected on file: ${file} msg: ${response}`)
+//    },
+//    success: function(file, response) {
+//        console.log(`Successfully uploaded file: ${file} msg: ${response}`)
+//    }
+
   })
 $(".dz-hidden-input").prop("disabled",true);
 

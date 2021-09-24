@@ -1,6 +1,6 @@
 import io
 
-from flask import request, redirect, flash, has_app_context
+from flask import request, redirect, flash, has_app_context, jsonify
 from flask_security import current_user
 from flask_admin import expose
 from flask_admin.babel import gettext
@@ -141,14 +141,15 @@ class MeshView(UserModelView):
             if task_id:
                 for f in request.files.getlist("file"):
                     print(f"Uploading file {f}")
+                    # rewind to start of file
                     f.stream.seek(0)
-                    # TODO: prepare request
-                    fields = {"images": (f.name, f.stream, "images/jpg")}
-                    model.odmproject.upload_file(task_id=request.form["id"], fields=fields)
+                    fields = {"images": (f.filename, f.stream, "images/jpg")}
+                    res = model.odmproject.upload_file(task_id=request.form["id"], fields=fields)
+
                 flash("Selected files successfully uploaded to ODM task")
             else:
-                flash("No ODM task selected yet", "error")
-                return redirect(return_url)
+                res = "No ODM task selected yet", 403
+            return res # redirect(return_url)
 
         template = self.odk2odm_template
         return self.render(
