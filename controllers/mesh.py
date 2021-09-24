@@ -45,49 +45,52 @@ def odk2odm(self, submissions=[], odk={}, odm={}):
         :param att: attachment details from odk server
         :return:
         """
-        print(odm)
-        print(f"Transfer of {att}")
-        res = odm_requests.get_thumbnail(filename=att["name"], **odm)
-        if res.status_code == 200:
-            msg = f"{att['name']} already uploaded, so skipping..."
-            print(msg)
+        if att["exists"]:
+            res = odm_requests.get_thumbnail(filename=att["name"], **odm)
+            if res.status_code == 200:
+                msg = f"{att['name']} already uploaded, so skipping..."
+                print(msg)
+                self.update_state(
+                    state='PROGRESS',
+                    meta={
+                        'current': n,
+                        'total': len(submissions),
+                        'status': msg
+                    }
+                )
+                return
+            # retrieve photo
+            print(f"Transfer of {att['name']}")
+            res = odk_requests.attachment(instanceId=sub["instanceId"], filename=att["name"], **odk)
+            try:
+                if res.status_code != 200:
+                    # something went wrong, so report that
+                    raise IOError(res.json())
+            except:
+                raise IOError(f"Cannot reach ODK server at {odk['url']}")
+            # post it on the task
+            # retrieve file contents (should only contain "images" but checking for all keys to make sure)
+            fields = {"images": (att["name"], res.content, "images/jpg")}
+            try:
+                res = odm_requests.post_upload(fields=fields, **odm)
+                if res.status_code == 200:
+                    status = f"{att['name']} uploaded..."
+                else:
+                    raise IOError(res.json())
+            except:
+                raise IOError(f"Cannot reach ODM server at {odm['url']}")
             self.update_state(
-                state='PROGRESS',
+                state=state,
                 meta={
                     'current': n,
                     'total': len(submissions),
-                    'status': msg
+                    'status': status
                 }
             )
-            return
-        # retrieve photo
-        res = odk_requests.attachment(instanceId=sub["instanceId"], filename=att["name"], **odk)
-        try:
-            if res.status_code != 200:
-                # something went wrong, so report that
-                raise IOError(res.json())
-        except:
-            raise IOError(f"Cannot reach ODK server at {odk['url']}")
-        # post it on the task
-        # retrieve file contents (should only contain "images" but checking for all keys to make sure)
-        fields = {"images": (att["name"], res.content, "images/jpg")}
-        try:
-            res = odm_requests.post_upload(fields=fields, **odm)
-            if res.status_code == 200:
-                status = f"{att['name']} uploaded..."
-            else:
-                raise IOError(res.json())
-        except:
-            raise IOError(f"Cannot reach ODM server at {odm['url']}")
-        self.update_state(
-            state=state,
-            meta={
-                'current': n,
-                'total': len(submissions),
-                'status': status
-            }
-        )
+        else:
+            print(f"File {att['name']} is missing in ODK submission {sub['instanceId']}")
         return
+
     # setup authentication for both server
     f = Fernet(os.getenv("FERNET_KEY"))  # prepare decryption
     odk["aut"] = (odk["user"], f.decrypt(odk["password_encrypt"].encode()).decode())
@@ -110,9 +113,8 @@ def odk2odm(self, submissions=[], odk={}, odm={}):
     print(f"Submissions: {submissions}")
     for n, sub in enumerate(submissions):
         # retrieve all attachments
-        print(sub["instanceId"])
+        print(f"Treating submission {sub['instanceId']}")
         attachments = odk_requests.attachment_list(instanceId=sub["instanceId"], **odk)
-        print(attachments.status_code)
         print(f"Attachments {attachments.json()}")
         if attachments.status_code == 401:
             raise PermissionError("Access denied to ODK server")
