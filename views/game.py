@@ -6,6 +6,10 @@ from flask_admin import form
 class GameView(PublicModelView):
     @property
     def can_create(self):
+        """
+        Setting to ensure a Game can only be created by users that are active and authenticated
+        :return:
+        """
         return current_user.is_active and current_user.is_authenticated
 
     can_edit = False

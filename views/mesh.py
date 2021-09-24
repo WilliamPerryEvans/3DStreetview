@@ -14,28 +14,38 @@ from models.mesh import Mesh
 from models.odm import Odm
 from models.odk import Odk
 
-class UploadFiles(FlaskForm):
-    images = MultipleFileField('Select local Image(s)')
-    upload = SubmitField("Upload")
-
-
 class MeshView(UserModelView):
     def render(self, template, **kwargs):
+        """
+        Modification of the default render method of flask admin ModelView.render.
+        This modification ensures that also odm and odk server configurations that the currnetly logged in user owns
+        are passed into the render view, so that they are available in the jinja2 templates. This is only relevant
+        for the details and create templates.
+        :param template: the specific view template that is to be rendered
+        :param kwargs: keyword arguments passed to original render function
+        :return:
+        """
         # add a database query to available data in Jinja template in the edit page
         # example modified from https://stackoverflow.com/questions/65892714/pass-other-object-data-into-flask-admin-model-view-edit-template
         if template in ['mesh/details.html', 'mesh/create.html']:
-            # add odm config and odk config to variables available in jinja template
+            # filter out odm and odk configs that belong to currently logged in user
             odmconfigs = Odm.query.filter(Odm.user_id == current_user.id).all()
             odkconfigs = Odk.query.filter(Odk.user_id == current_user.id).all()
+            # add odm config and odk config to variables available in jinja template
             kwargs["odm_configs"] = odmconfigs
             kwargs["odk_configs"] = odkconfigs
         return super(MeshView, self).render(template, **kwargs)
 
+    # the details view must be shown as a modal instead of a new page
     details_modal = True
     can_edit = True
 
     @property
     def column_list(self):
+        """
+        Modify the displayed details in case a user is logged in as admin
+        :return: user column list
+        """
         user_column_list = [
             Mesh.id,
             Mesh.latitude,
@@ -49,6 +59,7 @@ class MeshView(UserModelView):
         if has_app_context() and current_user.has_role('admin'):
             user_column_list.append("user")
         return user_column_list
+
     @property
     def _list_columns(self):
         return self.get_list_columns()
@@ -59,6 +70,10 @@ class MeshView(UserModelView):
 
     @property
     def form_columns(self):
+        """
+        Modify the displayed details in case a user is logged in as admin
+        :return: user form columns
+        """
         user_form_columns = [
             Mesh.latitude,
             Mesh.longitude,
@@ -71,6 +86,7 @@ class MeshView(UserModelView):
             user_form_columns.append("user")
         return user_form_columns
 
+    # update associated form class properties
     @property
     def _create_form_class(self):
         return self.get_create_form()
@@ -113,9 +129,9 @@ class MeshView(UserModelView):
 
     @expose("/odk2odm", methods=("GET", "POST"))
     def odk2odm(self):
-        """The method you need to call"""
         """
-            Details model view
+        A special odk2odm template, that performs the task of transferring files from ODK to ODM
+        The template also allows for transfer of local photos to the same ODM tasks.
         """
         return_url = get_redirect_target() or self.get_url('.index_view')
 
@@ -123,20 +139,17 @@ class MeshView(UserModelView):
         if not self.can_view_details:
             return redirect(return_url)
 
-        # retrieve model
+        # retrieve mesh model
         id = get_mdict_item_or_list(request.args, 'id')
         if id is None:
             return redirect(return_url)
-
         model = self.get_one(id)
 
         if model is None:
             flash(gettext('Record does not exist.'), 'error')
             return redirect(return_url)
         if request.method == "POST":
-            # TODO: retrieve details of current ODM server
-            print("Getting ODM details")
-            # upload files to ODM server
+            # POST occurs when a user wants to upload local files to ODM server
             task_id = request.form["id"]
             if task_id:
                 for f in request.files.getlist("file"):
@@ -161,7 +174,7 @@ class MeshView(UserModelView):
         """
         Override the action form to enable submission of local files
 
-        :return:
+        :return: form
         """
         form = super(UserModelView, self).get_action_form()
         form.files = MultipleFileField('Select local Image(s)')
@@ -172,7 +185,7 @@ class MeshView(UserModelView):
         """
         Only show Odm configs from this user.
 
-        :return:
+        :return: queried data
         """
         if not(current_user.has_role("admin")):
             return super(MeshView, self).get_query().filter(Mesh.user_id == current_user.id)
@@ -184,7 +197,7 @@ class MeshView(UserModelView):
         Don't allow to access a specific Odm config if it's not from this user.
 
         :param id:
-        :return:
+        :return: first in query
         """
         if not(current_user.has_role("admin")):
             return super(MeshView, self).get_query().filter_by(id=id).filter(Mesh.user_id == current_user.id).one()
@@ -196,9 +209,9 @@ class MeshView(UserModelView):
         """
         Link newly created Odm config to the current logged in user on creation.
 
-        :param form:
-        :param model:
-        :param is_created:
+        :param form: formn object
+        :param model: database model
+        :param is_created: True when a new model is created from form
         """
         if is_created:
             model.user_id = current_user.id
