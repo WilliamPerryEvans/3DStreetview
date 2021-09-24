@@ -40,7 +40,7 @@ class Odk(Base, SerializerMixin):
     def password(self):
         """
         decrypt password
-        :return:
+        :return: decrypted password
         """
         f = Fernet(os.getenv("FERNET_KEY"))  # prepare encryption
         return f.decrypt(self.password_encrypt).decode()
