@@ -17,10 +17,20 @@ from app import celery
 
 @celery.task(bind=True)
 def odk2odm(self, submissions=[], odk={}, odm={}):
+    """
+    retrieves from ODK and transfers to ODM, all attachments from list of submissions in ODK project/form
+    celery task, so supposed to run as a background task
+    :param self: celery object
+    :param submissions: list of submissions retrieved from ODK server and form
+    :param odk: dictionary with server settings for odk, including url, auth tuple, projectId and formId
+    :param odm: dictionary with server settings for odm, including url, token, project_id and task_id
+    :return:
+    """
     def transfer(att, state="PROGRESS"):
         """
-        subroutine to transfer one file
+        subroutine to transfer one file, function returns None always
         :param att: attachment details from odk server
+        :param state: celery state string
         :return:
         """
         if att["exists"]:
@@ -109,6 +119,10 @@ def odk2odm(self, submissions=[], odk={}, odm={}):
 
 @mesh_api.before_request
 def before_request():
+    """
+    Any request in this controller can only be performed by logged in users
+    :return: response
+    """
     if current_user.is_anonymous:
         return jsonify("Forbidden"), 401
 
@@ -118,7 +132,7 @@ def get_meshes():
     """
     API endpoint for getting list of meshes available to currently logged in user
 
-    :return:
+    :return: response
     """
     meshes = Mesh.query.filter_by(id=id).filter(Mesh.user_id == current_user.id).all()
     return jsonify([d.to_dict() for d in meshes])
@@ -129,7 +143,7 @@ def get_mesh(id):
     """
     API endpoint for getting specific mesh available to currently logged in user
 
-    :return:
+    :return: response
     """
     mesh = Mesh.query.filter_by(id=id).filter(Mesh.user_id == current_user.id).first()
     return jsonify(mesh.to_dict())
@@ -138,6 +152,13 @@ def get_mesh(id):
 @mesh_api.route("/api/mesh/<id>", methods=["POST"])
 @login_required
 def post_attachment(id):
+    """
+    Post attachment in ODM project and task belonging to mesh with id <id>
+    The task_id of the ODM project must be contained in the request data, as json with field "odm_kwargs"
+    The projectId and formId of the ODK project must be contained in the request data, as json with field "odk_kwargs"
+    :param id: id of mesh
+    :return: response
+    """
     try:
         mesh = Mesh.query.filter_by(id=id).filter(Mesh.user_id == current_user.id).one()
     except:
@@ -169,6 +190,12 @@ def post_attachment(id):
 @mesh_api.route("/api/mesh/odk2odm/<id>", methods=["POST"])
 @login_required
 def submit_upload(id):
+    """
+    Sumbit an upload task for celery workers. odm and odk details must be provided in json content of request
+
+    :param id: id of mesh that task belongs to
+    :return: response
+    """
     try:
         mesh = Mesh.query.filter_by(id=id).filter(Mesh.user_id == current_user.id).one()
     except:
@@ -177,7 +204,6 @@ def submit_upload(id):
     # poll for the status of the last upload done, if status does not exist or is completed, then go, otherwise flash
     if mesh.current_task:
         res = taskstatus(mesh.current_task)
-        print(res.json)
         if (res.json["state"] == "PROGRESS" or res.json["state"] == "PENDING"):
             # retrieve content
             return "Too many requests on your account, please wait for your uploads to complete", 429
@@ -217,17 +243,14 @@ def submit_upload(id):
     print(task.id)
     return f"Task {task.id} submitted", 202
 
-@mesh_api.route("/api/mesh/test", methods=["GET"])
-@login_required
-def mesh_test():
-    task = test_job.apply_async()
-    print(task.id)
-    return jsonify({}), 202, {'Location': url_for('mesh_api.taskstatus',
-                                                  task_id=task.id)}
-
 # status api request
 @mesh_api.route("/api/status/<task_id>")
 def taskstatus(task_id):
+    """
+    API route for status of a celery task
+    :param task_id: uuid of celery task
+    :return: response
+    """
     task = odk2odm.AsyncResult(task_id)
     if task.state == 'PENDING':
         # job did not start yet

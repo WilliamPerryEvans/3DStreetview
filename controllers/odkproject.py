@@ -18,6 +18,10 @@ schema = {
 
 @odkproject_api.before_request
 def before_request():
+    """
+    Any request in this controller can only be performed by logged in users
+    :return:
+    """
     if current_user.is_anonymous:
         return jsonify("Forbidden"), 401
 
