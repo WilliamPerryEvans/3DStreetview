@@ -145,8 +145,6 @@ class MeshView(UserModelView):
                     f.stream.seek(0)
                     fields = {"images": (f.filename, f.stream, "images/jpg")}
                     res = model.odmproject.upload_file(task_id=request.form["id"], fields=fields)
-
-                flash("Selected files successfully uploaded to ODM task")
             else:
                 res = "No ODM task selected yet", 403
             return res # redirect(return_url)

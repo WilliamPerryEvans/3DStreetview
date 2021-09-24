@@ -10,11 +10,13 @@ var odk2odm_progress = 0;  // percentage of upload progress
 var task_data = {};
 
 var dropzone = new Dropzone('#upload-widget', {
-    parallelUploads: 10,
+    parallelUploads: 1,
     acceptedFiles: 'image/jpeg',
     thumbnailHeight: 200,
     thumbnailWidth: 200,
     maxFilesize: 5,
+    addRemoveLinks: true,
+
     error: function(file, message) {
         console.log(`Error detected on file: ${file} msg: ${message}`)
         if (file.previewElement) {
