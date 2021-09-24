@@ -9,8 +9,39 @@ var odk2odm_total = 0;
 var odk2odm_progress = 0;  // percentage of upload progress
 var task_data = {};
 
+var dropzone = new Dropzone('#upload-widget', {
+    parallelUploads: 1,
+    acceptedFiles: 'image/jpeg',
+    thumbnailHeight: 200,
+    thumbnailWidth: 200,
+    maxFilesize: 5,
+    addRemoveLinks: true,
+    error: function(file, message) {
+        console.log(`Error detected on file: ${file} msg: ${message}`)
+        if (file.previewElement) {
+          file.previewElement.classList.add("dz-error");
+          if (typeof message !== "string" && message.error) {
+            message = message.error;
+          }
+          for (let node of file.previewElement.querySelectorAll(
+            "[data-dz-errormessage]"
+          )) {
+            if (message.includes("304")) {
+                node.textContent = 'This file is already present on server';
+            } else {
+                node.textContent = message
+            }
+
+          }
+        }
+    },
+    queuecomplete: function() {
+        update_odm_task();
+    }
+  });
+$(".dz-hidden-input").prop("disabled",true);
+
 $(document).ready(function () {
-    // fill drop down
     get_odm_tasks();
     get_odk_forms();
 });
@@ -126,6 +157,10 @@ function update_odm_task() {
     var task_select = document.getElementById("odm_task");
     const task_id = task_select.value;
     if (task_id != "null") {
+        // enable local file upload
+        $(".dz-hidden-input").prop("disabled", false);
+        document.getElementById("dz-message").innerText = "Drag and drop JPG files to upload to ODM"
+
         document.getElementById("task_create_button").disabled = true;
         document.getElementById("task_delete_button").disabled = true;
         document.getElementById("odm_download").disabled = true;
@@ -136,6 +171,7 @@ function update_odm_task() {
                 console.log(data);
                 task_data = data;  // globalize current task data
                 // change content of status texts and bars
+                document.getElementById("odm_task_id").value = task_id;
                 $('#task_id span').text(`Task: ${task_id}`);
                 $('#images_count span').text(` ${data.images_count}`);
                 $('#processing_time span').text(` ${millisToMinutesAndSeconds(data.processing_time)}`);
@@ -238,13 +274,6 @@ function create_odm_task() {
     }
     ];
 
-//    options = {
-//        "dsm": true,
-//        "dtm": true,
-//        "matcher-distance": 20,
-//        "matcher-neighbors": 800,
-//        "pc-geometric": true
-//    }
     const task_name = $('input#odm_task_name').val();
     content = {
         "name": task_name,
@@ -487,4 +516,5 @@ function mesh_to_game () {
 $( document ).ready(function() {
     update_upload();
     update_odm_task();
+
 });

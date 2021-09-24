@@ -219,6 +219,7 @@ EOF
     echo 'adding the Portal to nginx'
     cat > streetview <<EOF
 server {
+    client_max_body_size 1024M;
     listen 80;
     server_name $domain_name www.$domain_name;
     location / {

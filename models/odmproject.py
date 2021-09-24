@@ -1,3 +1,4 @@
+from flask import jsonify
 from sqlalchemy import Integer, ForeignKey, String, Column
 from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.orm import relationship
@@ -25,7 +26,20 @@ class Odmproject(Base, SerializerMixin):
             return {"name": f"WARNING: Project could not be retrieved"}
 
 
-
+    def upload_file(self, task_id, fields):
+        """
+        Uploads a file to odm project to selected task
+        :param task_id: str (uuid) - the uuid belonging to the task to retrieve
+        :param fields: dict - must contain the following recipe: {"images": <name of image file.JPG>, <bytestream of image>, 'image/jpg')}
+        :return: http response
+        """
+        # check if file already exists
+        res = odm_requests.get_thumbnail(self.odm.url, self.odm.token, self.remote_id, task_id, filename=fields["images"][0])
+        if res.status_code == 200:
+            return "File already exists", 304  # 304 means cached version of requested file is same as file being sent
+        else:
+            res = odm_requests.post_upload(self.odm.url, self.odm.token, self.remote_id, task_id, fields)
+            return jsonify(res.json())
 
     def __str__(self):
         return "{}".format(self.remote_id)
