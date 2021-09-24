@@ -16,28 +16,6 @@ mesh_api = Blueprint("mesh_api", __name__)
 from app import celery
 
 @celery.task(bind=True)
-def test_job(self):
-    print("Running job as a Thread!")
-    for i in range(10):
-        print(f"Processing {i}/10")
-        self.update_state(
-            state='PROGRESS',
-            meta={
-                'current': i,
-                'total': 10,
-                'status': "Working..."
-            }
-        )
-        time.sleep(1)
-    return {
-        'current': 100,
-        'total': 100,
-        'status': 'Job completed!',
-        'result': 42
-    }
-
-
-@celery.task(bind=True)
 def odk2odm(self, submissions=[], odk={}, odm={}):
     def transfer(att, state="PROGRESS"):
         """
