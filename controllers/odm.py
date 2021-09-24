@@ -150,6 +150,22 @@ def post_project(id):
         return f"Page {odm.url} does not exist", 404
 
 
+@odm_api.route("/api/odm/<id>/projects/<project_id>/tasks/<task_id>/", methods=["PATCH"])
+@login_required
+def patch_task(id, project_id, task_id):
+    # TODO: allow for passing of options from allowed list
+    odm = get_odm(id)
+    if not(isinstance(odm, Odm)):
+        return odm
+    # request token
+    try:
+        res = odm_requests.patch_task(odm.url, odm.token, project_id, task_id, data=request.get_json())
+        return jsonify(res.json())
+    except:
+        return f"Page {odm.url} does not exist", 404
+
+
+
 @odm_api.route("/api/odm/<id>/projects/<project_id>/tasks/", methods=["POST"])
 @login_required
 def post_task(id, project_id):
