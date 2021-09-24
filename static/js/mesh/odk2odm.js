@@ -16,7 +16,6 @@ var dropzone = new Dropzone('#upload-widget', {
     thumbnailWidth: 200,
     maxFilesize: 5,
     addRemoveLinks: true,
-
     error: function(file, message) {
         console.log(`Error detected on file: ${file} msg: ${message}`)
         if (file.previewElement) {
@@ -36,14 +35,10 @@ var dropzone = new Dropzone('#upload-widget', {
           }
         }
     },
-//    error: function(file, response) {
-//        console.log(`Error detected on file: ${file} msg: ${response}`)
-//    },
-//    success: function(file, response) {
-//        console.log(`Successfully uploaded file: ${file} msg: ${response}`)
-//    }
-
-  })
+    queuecomplete: function() {
+        update_odm_task();
+    }
+  });
 $(".dz-hidden-input").prop("disabled",true);
 
 $(document).ready(function () {
