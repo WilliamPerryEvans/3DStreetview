@@ -90,7 +90,7 @@ class OdkconfigView(UserModelView):
     # ensure that the provided credentials give a suitable response, by querying the most top level API call of ODK Central
     def validate_form(self, form):
         """
-        Additional server side validation for camera config. Calculate max distance between the GCPS coordinates.
+        Additional server side validation for ODK server config
 
         :param form:
         :return:
@@ -100,13 +100,15 @@ class OdkconfigView(UserModelView):
             if "name" in form:
                 # assume the form can be submitted
                 prevent_submit = False
+                url = form.host.data.strip('/')
+                form.host.data = url  # remove trailing slash from url
                 try:
-                    res = odk_requests.projects(f"{form.host.data}:{form.port.data}", (form.user.data, form.password_encrypt.data))
+                    res = odk_requests.projects(f"{url}:{form.port.data}", (form.user.data, form.password_encrypt.data))
                 except:
-                    flash(f"I was not able to find a server on address {form.host.data}:{form.port.data}. Is the url and port valid? If so, please check if the server is online.", "error")
+                    flash(f"I was not able to find a server on address {url}:{form.port.data}. Is the url and port valid? If so, please check if the server is online.", "error")
                     prevent_submit = True
                 if res.status_code == 401:
-                    flash(f"Username and password for ODK server at {form.host.data}:{form.port.data} are invalid.", "error")
+                    flash(f"Username and password for ODK server at {url}:{form.port.data} are invalid.", "error")
                     prevent_submit = True
                 if prevent_submit:
                     # don't submit the form

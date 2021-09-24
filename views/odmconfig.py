@@ -1,9 +1,11 @@
 from flask import has_app_context, flash
 from flask_security import current_user
+from flask_admin.helpers import is_form_submitted
 from wtforms import ValidationError, PasswordField
 from views.general import UserModelView
 from models.odm import Odm
 from sqlalchemy.exc import IntegrityError
+from odk2odm import odm_requests
 
 class OdmconfigView(UserModelView):
     @property
@@ -81,6 +83,35 @@ class OdmconfigView(UserModelView):
     create_template = "odmconfig/create.html"
     edit_template = "odmconfig/edit.html"
     details_template = "odmconfig/details.html"
+
+    def validate_form(self, form):
+        """
+        Additional server side validation for ODK server config
+
+        :param form:
+        :return:
+        """
+        if is_form_submitted():
+            # check if a create or edit form was submitted (not a delete), this is when the name attribute is found
+            if "name" in form:
+                # assume the form can be submitted
+                prevent_submit = False
+                url = form.host.data.strip('/')
+                form.host.data = url  # remove trailing slash from url
+                try:
+                    res = odm_requests.get_token_auth(f"{url}:{form.port.data}", form.user.data, form.password_encrypt.data)
+                    if res.status_code == 400:
+                        flash(f"Username and password for ODM server at {url}:{form.port.data} are invalid.", "error")
+                        prevent_submit = True
+                except:
+                    flash(f"I was not able to find a server on address {url}:{form.port.data}. Is the url and port valid? If so, please check if the server is online.", "error")
+                    prevent_submit = True
+                if prevent_submit:
+                    # don't submit the form
+                    return False
+        # submit the form
+        return super(OdmconfigView, self).validate_form(form)
+
 
     def get_query(self):
         """
