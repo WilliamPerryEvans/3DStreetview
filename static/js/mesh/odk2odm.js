@@ -309,7 +309,27 @@ function commit_odm_task() {
     var task_select = document.getElementById("odm_task");
     const task_id = task_select.value;
     // get the status of the task and decide what to do
-    if (task_data.status == 50 || task_data.status == 40) {
+    if ( task_data.status == 50 || task_data.status == 40 || task_data.status == 30 ) {
+        // reset task to zero by patching the restart_from
+        data = {
+            "can_rerun_from": [],
+            "status": null
+        }
+        url_patch = `/api/odm/${odmconfig_id}/projects/${odmproject_id}/tasks/${task_id}/`
+        // TODO: fix patch to enable restart at the start of a job
+        $.ajax({
+            type: 'PATCH',
+            url: url_patch,
+            data: JSON.stringify(data),
+            contentType: "application/json",
+            dataType: 'json',
+            // Submit parent form on success.
+            success: function(data) {
+                console.log(data);
+            },
+            // Enable save button again.
+            error: function() { flashMessage([{"type": "danger", "message": "Not able to update ODM task status"}]) }
+        });
         url = `/api/odm/${odmconfig_id}/projects/${odmproject_id}/tasks/${task_id}/restart/`
     } else {
         // for now hardcode the settings, this needs to be changed later on
@@ -433,11 +453,13 @@ function update_upload() {
     prog = document.getElementById('upload_progress')
     $.getJSON(url,
         function(mesh) {
+            console.log(mesh)
             if (`${mesh.current_task}` != "null") {
                 url = `/api/status/${mesh.current_task}`
                 $.getJSON(
                     url,
                     function(task) {
+                        console.log(task)
                         $('#upload_title').text(`${task.state}: ${task.status}`);
                         if (task["state"] == "SUCCESS"){
                             prog.style = `width: 100%`;

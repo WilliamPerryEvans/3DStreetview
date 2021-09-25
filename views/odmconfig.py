@@ -1,13 +1,19 @@
 from flask import has_app_context, flash
 from flask_security import current_user
+from flask_admin.helpers import is_form_submitted
 from wtforms import ValidationError, PasswordField
 from views.general import UserModelView
 from models.odm import Odm
 from sqlalchemy.exc import IntegrityError
+from odk2odm import odm_requests
 
 class OdmconfigView(UserModelView):
     @property
     def can_edit(self):
+        """
+        Only admin users can modify an existing server config, e.g. to give credentials to other users
+        :return: boolean
+        """
         if has_app_context() and current_user.has_role('admin'):
             return True
         else:
@@ -15,6 +21,10 @@ class OdmconfigView(UserModelView):
 
     @property
     def column_list(self):
+        """
+        Modify the displayed details in case a user is logged in as admin
+        :return: user column list
+        """
         user_column_list = [
             Odm.id,
             Odm.name,
@@ -36,6 +46,10 @@ class OdmconfigView(UserModelView):
 
     @property
     def form_columns(self):
+        """
+        Modify the displayed details in case a user is logged in as admin
+        :return: user form columns
+        """
         user_form_columns = [
             Odm.name,
             Odm.host,
@@ -82,11 +96,40 @@ class OdmconfigView(UserModelView):
     edit_template = "odmconfig/edit.html"
     details_template = "odmconfig/details.html"
 
+    def validate_form(self, form):
+        """
+        Additional server side validation for ODK server config
+
+        :param form:
+        :return: response
+        """
+        if is_form_submitted():
+            # check if a create or edit form was submitted (not a delete), this is when the name attribute is found
+            if "name" in form:
+                # assume the form can be submitted
+                prevent_submit = False
+                url = form.host.data.strip('/')
+                form.host.data = url  # remove trailing slash from url
+                try:
+                    res = odm_requests.get_token_auth(f"{url}:{form.port.data}", form.user.data, form.password_encrypt.data)
+                    if res.status_code == 400:
+                        flash(f"Username and password for ODM server at {url}:{form.port.data} are invalid.", "error")
+                        prevent_submit = True
+                except:
+                    flash(f"I was not able to find a server on address {url}:{form.port.data}. Is the url and port valid? If so, please check if the server is online.", "error")
+                    prevent_submit = True
+                if prevent_submit:
+                    # don't submit the form
+                    return False
+        # submit the form
+        return super(OdmconfigView, self).validate_form(form)
+
+
     def get_query(self):
         """
         Only show Odm configs from this user.
 
-        :return:
+        :return: queried data
         """
         if not(current_user.has_role("admin")):
             return super(OdmconfigView, self).get_query().filter(Odm.user_id == current_user.id)
@@ -111,9 +154,9 @@ class OdmconfigView(UserModelView):
         """
         Link newly created Odm config to the current logged in user on creation.
 
-        :param form:
-        :param model:
-        :param is_created:
+        :param form: form object
+        :param model: database model
+        :param is_created: True when a new model is created from form
         """
         if is_created:
             model.user_id = current_user.id

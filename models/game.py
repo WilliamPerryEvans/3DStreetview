@@ -8,7 +8,7 @@ from models.elements.unzipmesh import unzipmesh
 
 class Game(Base, SerializerMixin):
     """
-    TODO Describe data model
+    Game model for managing and exposing game files
     """
     __tablename__ = "game"
     id = Column(Integer, primary_key=True)

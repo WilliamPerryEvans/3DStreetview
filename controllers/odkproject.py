@@ -18,6 +18,10 @@ schema = {
 
 @odkproject_api.before_request
 def before_request():
+    """
+    Any request in this controller can only be performed by logged in users
+    :return: http response
+    """
     if current_user.is_anonymous:
         return jsonify("Forbidden"), 401
 
@@ -26,8 +30,8 @@ def before_request():
 def create_project():
     """
     API endpoint for posting a new ODK project that has a one-to-one relationship with a mesh
-
-    :return:
+    required kwargs are provided through the request content in json
+    :return: http response
     """
     content = request.get_json(silent=True)
     validate(instance=content, schema=schema)

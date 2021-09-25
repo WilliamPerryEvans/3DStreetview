@@ -40,7 +40,7 @@ class Odm(Base, SerializerMixin):
     def token(self):
         """
         get a token from server config
-        :return:
+        :return: str - token
         """
         res = odm_requests.get_token_auth(self.url, self.user, self.password)
         if res.status_code == 400:
@@ -52,7 +52,7 @@ class Odm(Base, SerializerMixin):
     def password(self):
         """
         decrypt password
-        :return:
+        :return: decrypted password
         """
         f = Fernet(os.getenv("FERNET_KEY"))  # prepare encryption
         return f.decrypt(self.password_encrypt).decode()

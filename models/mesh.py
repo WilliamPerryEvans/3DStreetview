@@ -21,16 +21,8 @@ class MeshStatus(enum.Enum):
 
 class Mesh(Base, SerializerMixin):
     """
-    Mesh including relationships with ODK attachments and ODM processing. Mesh always belongs to a project which may
-    include several meshes.
-    Process envisaged is:
-    - User makes a project
-    per project:
-        - user makes a mesh
-        per mesh:
-            - user selects files from ODK server(s)/project(s)/form(s) to be included in mesh
-            - user selects an ODM project for mesh processing
-            - actions of user and callbacks are reflected on status of mesh
+    Mesh including relationships with ODK attachments and ODM processing.
+    Mesh projects are connected to users
     """
     __tablename__ = "mesh"
     serialize_only = ('id', 'user_id', 'odmproject_id', 'odkproject_id', 'name', 'latitude', 'longitude', 'status', 'current_task', 'odmproject', 'odkproject')
