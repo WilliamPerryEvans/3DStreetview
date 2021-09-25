@@ -196,7 +196,7 @@ class MeshView(UserModelView):
         """
         Don't allow to access a specific Odm config if it's not from this user.
 
-        :param id:
+        :param id: id of model
         :return: first in query
         """
         if not(current_user.has_role("admin")):
@@ -209,7 +209,7 @@ class MeshView(UserModelView):
         """
         Link newly created Odm config to the current logged in user on creation.
 
-        :param form: formn object
+        :param form: form object
         :param model: database model
         :param is_created: True when a new model is created from form
         """

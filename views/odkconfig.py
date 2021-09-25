@@ -12,6 +12,10 @@ from sqlalchemy.exc import IntegrityError
 class OdkconfigView(UserModelView):
     @property
     def can_edit(self):
+        """
+        Only admin users can modify an existing server config, e.g. to give credentials to other users
+        :return: boolean
+        """
         if has_app_context() and current_user.has_role('admin'):
             return True
         else:
@@ -19,6 +23,10 @@ class OdkconfigView(UserModelView):
 
     @property
     def column_list(self):
+        """
+        Modify the displayed details in case a user is logged in as admin
+        :return: user column list
+        """
         user_column_list = [
             Odk.id,
             Odk.name,
@@ -40,6 +48,10 @@ class OdkconfigView(UserModelView):
 
     @property
     def form_columns(self):
+        """
+        Modify the displayed details in case a user is logged in as admin
+        :return: user form columns
+        """
         user_form_columns = [
             Odk.name,
             Odk.host,
@@ -92,8 +104,8 @@ class OdkconfigView(UserModelView):
         """
         Additional server side validation for ODK server config
 
-        :param form:
-        :return:
+        :param form: form
+        :return: response
         """
         if is_form_submitted():
             # check if a create or edit form was submitted (not a delete), this is when the name attribute is found
@@ -121,7 +133,7 @@ class OdkconfigView(UserModelView):
         """
         Only show Odk configs from this user.
 
-        :return:
+        :return: queried data
         """
         if not(current_user.has_role("admin")):
             return super(OdkconfigView, self).get_query().filter(Odk.user_id == current_user.id)
@@ -133,8 +145,8 @@ class OdkconfigView(UserModelView):
         """
         Don't allow to access a specific Odk config if it's not from this user.
 
-        :param id:
-        :return:
+        :param id: id of model
+        :return: first in query
         """
         if not(current_user.has_role("admin")):
             return super(OdkconfigView, self).get_query().filter_by(id=id).filter(Odk.user_id == current_user.id).one()
@@ -146,9 +158,9 @@ class OdkconfigView(UserModelView):
         """
         Link newly created Odk config to the current logged in user on creation.
 
-        :param form:
-        :param model:
-        :param is_created:
+        :param form: form object
+        :param model: database model
+        :param is_created: True when a new model is created from form
         """
         if is_created:
             model.user_id = current_user.id
