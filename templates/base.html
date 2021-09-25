@@ -56,7 +56,10 @@
 
         <!-- Main Content -->
         <div id="content">
+            <div class="container" style="top: 10px; position: fixed;z-index: 2;width: 70%;">
             <!-- Topbar -->
+            <div id="flash"></div>
+            </div>
             <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
                 <ul class="navbar-nav ml-auto">
                     {{ layout_extra.menu_links() }}
@@ -71,7 +74,7 @@
             {% block messages %}
                 {{ layout.messages() }}
             {% endblock %}
-            <div id="flash"></div>
+<!--            <div id="flash" style="position: absolute;"></div>-->
             {# store the jinja2 context for form_rules rendering logic #}
             {% set render_ctx = h.resolve_ctx() %}
             {% block body %}{% endblock %}
