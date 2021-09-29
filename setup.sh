@@ -123,7 +123,7 @@ setup_redis() {
     echo 'Making redis supervised by systemd'
     sudo sed -i 's/supervised no/supervised systemd/g' /etc/redis/redis.conf
     # make redis password secure
-    # TODO: in case we want workers to operate outside of the app server, then work on firewall rules and access
+    # TODO: in case we want workers to operate outside of the streetview server, then work on firewall rules and access
     echo 'I am creating a very secure 64-bit encrypted password for you'
     # export REDIS_PASSWORD=`openssl rand 60 | openssl base64 -A`
     export REDIS_PASSWORD=`echo dd if=/dev/urandom bs=32 count=1 2>/dev/null | openssl base64`
