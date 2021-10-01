@@ -5,8 +5,8 @@ email_validator
 Flask
 Flask-Admin
 Flask-Security
-Flask-SQLAlchemy
 flask_httpauth
+alembic
 jsonschema
 psycopg2
 python-dotenv
