@@ -316,7 +316,7 @@ Group=www-data
 WorkingDirectory=${PWD}
 Environment="PATH=${PWD}/3dsv/bin"
 EnvironmentFile=${PATH}/.env
-ExecStart=${PWD}/3dsv/bin/celery -A app.celery worker --concurrency=1
+ExecStart=${PWD}/3dsv/bin/celery -A streetview.celery worker --concurrency=1
 Restart=always
 
 [Install]
