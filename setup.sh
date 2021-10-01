@@ -188,6 +188,10 @@ setup_portal() {
     pip install wheel
     pip install uwsgi
     pip install -r requirements.txt
+
+    # install streetview package
+    pip install -e .
+
     # generation of a suitable 32bit 64base encoded fernet key
     export passwd=`python -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())'`
     sed -i "/FERNET_KEY=/c\FERNET_KEY=${passwd}" ./.env
