@@ -1,4 +1,5 @@
 import os
+from urllib.parse import quote
 from dotenv import load_dotenv
 from logging.config import fileConfig
 from sqlalchemy import engine_from_config
@@ -14,6 +15,8 @@ config = context.config
 
 # set the database url here
 postgres_url = f"postgresql://{os.getenv('POSTGRES_USER')}:{os.getenv('POSTGRES_PASSWORD')}@{os.getenv('POSTGRES_SERVER')}:{os.getenv('POSTGRES_PORT')}/{os.getenv('POSTGRES_DB')}"
+postgres_url = postgres_url.replace('%', '%%')
+
 config.set_main_option("sqlalchemy.url", postgres_url)
 
 # Interpret the config file for Python logging.
