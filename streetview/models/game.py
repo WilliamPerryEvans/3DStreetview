@@ -38,4 +38,6 @@ def receive_after_update(mapper, connection, target):
         if not(os.path.isfile(zipfile)):
             raise IOError(f"File {zipfile} does not exist")
         unzipmesh(zipfile, trg_path=trg_path, mesh_name="unity")
+        # after unzipping, throw away the .zip file
+        os.remove(zipfile)
 
