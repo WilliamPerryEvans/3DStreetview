@@ -226,7 +226,7 @@ EOF
     echo 'adding the Portal to nginx'
     cat > streetview <<EOF
 server {
-    client_max_body_size 25M; # file uploads per request limited to 25M. This should be sufficient for photo materials
+    client_max_body_size 512M; # file uploads per request limited to 512M. This should accomodate uploads of full games
     listen 80;
     server_name $domain_name www.$domain_name;
     location / {
