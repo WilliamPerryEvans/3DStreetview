@@ -52,7 +52,9 @@ class GameView(PublicModelView):
     # ensure that the provided credentials give a suitable response, by querying the most top level API call of ODK Central
     def validate_form(self, form):
         """
-        Additional server side validation for ODK server config
+        Validation of zipfile contents before making Game record. Rejected if:
+            * zipfile does not contain the (4) expected files
+            * file is not a zipfile
 
         :param form: form
         :return: response
