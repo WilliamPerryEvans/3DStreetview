@@ -1,6 +1,7 @@
 # 3DStreetView
 # folder with uploaded meshes
 streetview/static/mesh/
+mesh
 
 # pycharm
 .idea
