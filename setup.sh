@@ -188,6 +188,13 @@ setup_portal() {
     pip install wheel
     pip install uwsgi
     pip install -r requirements.txt
+
+    # install streetview package
+    pip install -e .
+
+    # initialize database and prepare first tables in version control
+    alembic upgrade head
+
     # generation of a suitable 32bit 64base encoded fernet key
     export passwd=`python -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())'`
     sed -i "/FERNET_KEY=/c\FERNET_KEY=${passwd}" ./.env
@@ -198,7 +205,7 @@ setup_portal() {
     cat > uwsgi.ini <<EOF
 [uwsgi]
 chdir = ${PWD}
-module = app:app
+module = streetview:app
 
 master = true
 processes = 1
@@ -309,7 +316,7 @@ Group=www-data
 WorkingDirectory=${PWD}
 Environment="PATH=${PWD}/3dsv/bin"
 EnvironmentFile=${PATH}/.env
-ExecStart=${PWD}/3dsv/bin/celery -A app.celery worker --concurrency=1
+ExecStart=${PWD}/3dsv/bin/celery -A streetview.celery worker --concurrency=1
 Restart=always
 
 [Install]

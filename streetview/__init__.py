@@ -61,9 +61,6 @@ app = create_app(__name__)
 security = Security(app, user_datastore, register_form=ExtendedRegisterForm)
 mail = Mail(app)
 
-# security = Security(streetview, user_datastore)
-
-
 @user_registered.connect_via(app)
 def user_registered_sighandler(sender, **kwargs):
     if app.config["SECURITY_SEND_REGISTER_EMAIL"]:
