@@ -277,9 +277,10 @@ function create_odm_task() {
     const task_name = $('input#odm_task_name').val();
     content = {
         "name": task_name,
-        "partial": true,
-        "options": options
+        "partial": true
+//        "options": options
     }
+    console.log(content)
     $.ajax({
         type: 'POST',
         url: `/api/odm/${odmconfig_id}/projects/${odmproject_id}/tasks/`,
