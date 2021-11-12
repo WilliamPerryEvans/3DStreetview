@@ -1,6 +1,4 @@
-import wtforms.fields
 from flask import request, redirect, flash, has_app_context
-from flask_wtf import FlaskForm
 from flask_security import current_user
 from flask_admin import expose
 from flask_admin.babel import gettext
@@ -8,89 +6,13 @@ from flask_admin.model.template import EndpointLinkRowAction
 from flask_admin.helpers import get_redirect_target
 from flask_admin.model.helpers import get_mdict_item_or_list
 
-from wtforms import Form
 from wtforms import fields
-from wtforms import validators
 from streetview.views.general import UserModelView
 from streetview.models.mesh import Mesh
 from streetview.models.odm import Odm
 from streetview.models.odk import Odk
 from odk2odm import odm_requests
-
-def get_options_fields(options):
-    opt_f = {}
-    for opt in options:
-        if opt["name"] in odm_requests.ODM_TASK_DEFAULT_OPTIONS:
-            value = odm_requests.ODM_TASK_DEFAULT_OPTIONS[opt["name"]]
-        else:
-            value = opt["value"]
-        kwargs = {
-            "label": opt["name"],
-            "default": value,
-            "description": opt["help"]
-        }
-        # set specific options and choose field type
-        if opt["type"] == "bool":
-            field = fields.BooleanField
-            kwargs["validators"] = [
-                validators.DataRequired(),
-            ]
-        elif opt["type"] == "enum":
-            field = fields.SelectField
-            kwargs["choices"] = opt["domain"]
-            kwargs["validators"] = [
-                 validators.DataRequired(),
-                 validators.AnyOf(opt["domain"])
-             ]
-        elif opt["type"] == "int":
-            field = fields.IntegerField
-            if opt["domain"] == "integer":
-                kwargs["validators"]  = [
-                    validators.DataRequired()
-                ]
-            elif opt["domain"] == "positive integer":
-                kwargs["validators"] = [
-                    validators.DataRequired(),
-                    validators.NumberRange(min=0)
-                ]
-            else:
-                raise ValueError(f"Found unexpected domain '{opt['domain']} in option {opt['name']}'")
-
-        elif opt["type"] == "float":
-            field = fields.FloatField
-            if "positive" in opt["domain"] or "> 0" in opt["domain"]:
-                kwargs["validators"] = [
-                    validators.DataRequired(),
-                    validators.NumberRange(min=0.),
-                ]
-            else:
-                kwargs["validators"] = [
-                    validators.DataRequired(),
-                ]
-        elif opt["type"] == "string":
-            field = fields.StringField
-            kwargs["validators"] = [validators.DataRequired()]
-        else:
-            print(f"Option {opt['name']} is not yet parsed")
-
-        # now parse the option to WTForms field
-        opt_f[opt["name"]] = field(**kwargs)
-    return opt_f
-
-class OdmOptionsForm(Form):
-    """
-    https://wtforms.readthedocs.io/en/2.3.x/specific_problems/
-    Options form for ODM tasks. Different option types are:
-    - bool: yes/no
-    - enum: list of choices
-    - float: float
-    - int: int
-    - string:
-    "value" annotates the default value
-    "
-    """
-    # for now only add a submit field. Rest will be parsed with a monkey-patch
-    submit = fields.SubmitField('Submit')
+from streetview.views.elements import odm_options
 
 class MeshView(UserModelView):
     def render(self, template, **kwargs):
@@ -116,12 +38,12 @@ class MeshView(UserModelView):
             # retrieve latest ODM settings available
             odm_config = kwargs["model"].odmproject.odm
             options = odm_requests.get_options(odm_config.url, odm_config.token).json()
-            options_fields = get_options_fields(options)
+            options_fields = odm_options.get_options_fields(options)
             # monkey patch OdmOptionsForm using the most current API based nodeODM settings available
 
             for k, v in options_fields.items():
-                setattr(OdmOptionsForm, k, v)
-            form = OdmOptionsForm()
+                setattr(odm_options.OdmOptionsForm, k, v)
+            form = odm_options.OdmOptionsForm()
             kwargs["form"] = form
         return super(MeshView, self).render(template, **kwargs)
 
