@@ -1,15 +1,96 @@
+import wtforms.fields
 from flask import request, redirect, flash, has_app_context
+from flask_wtf import FlaskForm
 from flask_security import current_user
 from flask_admin import expose
 from flask_admin.babel import gettext
 from flask_admin.model.template import EndpointLinkRowAction
 from flask_admin.helpers import get_redirect_target
 from flask_admin.model.helpers import get_mdict_item_or_list
-from wtforms.fields import HiddenField, MultipleFileField, SubmitField
+
+from wtforms import Form
+from wtforms import fields
+from wtforms import validators
 from streetview.views.general import UserModelView
 from streetview.models.mesh import Mesh
 from streetview.models.odm import Odm
 from streetview.models.odk import Odk
+from odk2odm import odm_requests
+
+def get_options_fields(options):
+    opt_f = {}
+    for opt in options:
+        if opt["name"] in odm_requests.ODM_TASK_DEFAULT_OPTIONS:
+            value = odm_requests.ODM_TASK_DEFAULT_OPTIONS[opt["name"]]
+        else:
+            value = opt["value"]
+        kwargs = {
+            "label": opt["name"],
+            "default": value,
+            "description": opt["help"]
+        }
+        # set specific options and choose field type
+        if opt["type"] == "bool":
+            field = fields.BooleanField
+            kwargs["validators"] = [
+                validators.DataRequired(),
+            ]
+        elif opt["type"] == "enum":
+            field = fields.SelectField
+            kwargs["choices"] = opt["domain"]
+            kwargs["validators"] = [
+                 validators.DataRequired(),
+                 validators.AnyOf(opt["domain"])
+             ]
+        elif opt["type"] == "int":
+            field = fields.IntegerField
+            if opt["domain"] == "integer":
+                kwargs["validators"]  = [
+                    validators.DataRequired()
+                ]
+            elif opt["domain"] == "positive integer":
+                kwargs["validators"] = [
+                    validators.DataRequired(),
+                    validators.NumberRange(min=0)
+                ]
+            else:
+                raise ValueError(f"Found unexpected domain '{opt['domain']} in option {opt['name']}'")
+
+        elif opt["type"] == "float":
+            field = fields.FloatField
+            if "positive" in opt["domain"] or "> 0" in opt["domain"]:
+                kwargs["validators"] = [
+                    validators.DataRequired(),
+                    validators.NumberRange(min=0.),
+                ]
+            else:
+                kwargs["validators"] = [
+                    validators.DataRequired(),
+                ]
+        elif opt["type"] == "string":
+            field = fields.StringField
+            kwargs["validators"] = [validators.DataRequired()]
+        else:
+            print(f"Option {opt['name']} is not yet parsed")
+
+        # now parse the option to WTForms field
+        opt_f[opt["name"]] = field(**kwargs)
+    return opt_f
+
+class OdmOptionsForm(Form):
+    """
+    https://wtforms.readthedocs.io/en/2.3.x/specific_problems/
+    Options form for ODM tasks. Different option types are:
+    - bool: yes/no
+    - enum: list of choices
+    - float: float
+    - int: int
+    - string:
+    "value" annotates the default value
+    "
+    """
+    # for now only add a submit field. Rest will be parsed with a monkey-patch
+    submit = fields.SubmitField('Submit')
 
 class MeshView(UserModelView):
     def render(self, template, **kwargs):
@@ -31,6 +112,17 @@ class MeshView(UserModelView):
             # add odm config and odk config to variables available in jinja template
             kwargs["odm_configs"] = odmconfigs
             kwargs["odk_configs"] = odkconfigs
+        if template == 'mesh/odk2odm.html':
+            # retrieve latest ODM settings available
+            odm_config = kwargs["model"].odmproject.odm
+            options = odm_requests.get_options(odm_config.url, odm_config.token).json()
+            options_fields = get_options_fields(options)
+            # monkey patch OdmOptionsForm using the most current API based nodeODM settings available
+
+            for k, v in options_fields.items():
+                setattr(OdmOptionsForm, k, v)
+            form = OdmOptionsForm()
+            kwargs["form"] = form
         return super(MeshView, self).render(template, **kwargs)
 
     # the details view must be shown as a modal instead of a new page
@@ -107,8 +199,8 @@ class MeshView(UserModelView):
     # column_descriptions = {
     # }
     form_extra_fields = {
-        "odmproject_id": HiddenField("odmproject_id"),
-        "odkproject_id": HiddenField("odkproject_id"),
+        "odmproject_id": fields.HiddenField("odmproject_id"),
+        "odkproject_id": fields.HiddenField("odkproject_id"),
         # "zipfile": form.FileUploadField("Mesh zipfile", base_path="mesh", allowed_extensions=["zip"]),
     }
 
@@ -153,8 +245,8 @@ class MeshView(UserModelView):
                     print(f"Uploading file {f}")
                     # rewind to start of file
                     f.stream.seek(0)
-                    fields = {"images": (f.filename, f.stream, "images/jpg")}
-                    res = model.odmproject.upload_file(task_id=request.form["id"], fields=fields)
+                    files = {"images": (f.filename, f.stream, "images/jpg")}
+                    res = model.odmproject.upload_file(task_id=request.form["id"], fields=files)
             else:
                 res = "No ODM task selected yet", 403
             return res # redirect(return_url)
@@ -174,8 +266,8 @@ class MeshView(UserModelView):
         :return: form
         """
         form = super(UserModelView, self).get_action_form()
-        form.files = MultipleFileField('Select local Image(s)')
-        form.upload = SubmitField("Upload")
+        form.files = fields.MultipleFileField('Select local Image(s)')
+        form.upload = fields.SubmitField("Upload")
         return form
 
     def get_query(self):
