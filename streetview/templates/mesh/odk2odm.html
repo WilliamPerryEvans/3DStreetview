@@ -164,17 +164,20 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form role="form">
-                        <div class="form-group">
-                            <label for="odm_task_name" class="control-label">Name</label>
-                            <input class="form-control" id="odm_task_name" name="odm_task_name" required="" type="text" value="">
-                        </div>
+                    <form id="new_odm_task" method="POST" action="" role="form">
+<!--                        <div class="form-group">-->
+<!--                            <label for="odm_task_name" class="control-label">Name</label>-->
+<!--                            <input class="form-control" id="odm_task_name" name="odm_task_name" required="" type="text" value="">-->
+<!--                        </div>-->
+
+<!--                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>-->
+<!--                            <button type="button" onclick="create_odm_task()" class="btn btn-primary save">Create task</button>-->
+                        {{ lib.render_form_fields(form.task_form) }}
+                        {{ lib.render_form_buttons(return_url, is_modal=True) }}
+                        {{ lib.render_form_fields(form.options_form) }}
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                            <button type="button" onclick="create_odm_task()" class="btn btn-primary save">Create task</button>
                         </div>
                     </form>
-                    {{ lib.render_form_fields(form) }}
 
                 </div>
             </div>
