@@ -35,17 +35,6 @@ class MeshView(UserModelView):
             # add odm config and odk config to variables available in jinja template
             kwargs["odm_configs"] = odmconfigs
             kwargs["odk_configs"] = odkconfigs
-        # if template == 'mesh/odk2odm.html':
-        #     # retrieve latest ODM settings available
-        #     odm_config = kwargs["model"].odmproject.odm
-        #     options = odm_requests.get_options(odm_config.url, odm_config.token).json()
-        #     options_fields = odm_options.get_options_fields(options)
-        #     # monkey patch OdmOptionsForm using the most current API based nodeODM settings available
-        #
-        #     for k, v in options_fields.items():
-        #         setattr(odm_options.OdmOptionsForm, k, v)
-        #     form = odm_options.OdmOptionsForm()
-        #     kwargs["form"] = form
         return super(MeshView, self).render(template, **kwargs)
 
     # the details view must be shown as a modal instead of a new page
@@ -170,7 +159,7 @@ class MeshView(UserModelView):
         # retrieve latest ODM settings available
         odm_config = model.odmproject.odm
         options = odm_requests.get_options(odm_config.url, odm_config.token).json()
-        options_fields = odm_options.get_options_fields(options)
+        options_fields = odm_options.get_options_fields(options, sort="name")
         # monkey patch OdmOptionsForm using the most current API based nodeODM settings available
 
         for k, v in options_fields.items():
@@ -191,13 +180,22 @@ class MeshView(UserModelView):
                 else:
                     res = "No ODM task selected yet", 403
                 return res # redirect(return_url)
-            elif "task_form-task" in request.form:
+            elif "task_form-name" in request.form:
                 # A ODM task form is submitted
                 if form.options_form.validate(form) and form.task_form.validate(form):
-                    print("Processing form")
+                    project_id = model.odmproject.remote_id
+                    odm = model.odmproject.odm
+                    # setup request data
+                    data = {
+                        "name": form.task_form["name"].data,
+                        "partial": True,
+                        "options": odm_options.parse_options(form.options_form)
+                    }
+                    res = odm_requests.post_task(odm.url, odm.token, project_id, data=data)
+                    flash(f"New task with id {res.json()['id']} created")
+
                 else:
                     flash("ODM task form is invalid, please rectify the errors", "error")
-                # return "Task creation not implemented yet", 200
 
         template = self.odk2odm_template
         return self.render(
