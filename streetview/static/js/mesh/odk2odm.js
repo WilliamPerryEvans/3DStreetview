@@ -248,59 +248,6 @@ function delete_odm_task() {
     }
 }
 
-function create_odm_task() {
-    // create a new odm task in selected odm project via a HTML modal
-    // get current id of mesh
-    // TODO: make the options more flexible. Now we set a number of pre-defined options that work for streetview
-    options = [{
-        "name": "dsm",
-        "value": true
-    },
-    {
-        "name": "dtm",
-        "value": true
-    },
-    {
-        "name": "matcher-distance",
-        "value": 20
-    },
-    {
-        "name": "matcher-neighbors",
-        "value": 800
-    },
-    {
-        "name": "pc-geometric",
-        "value": true
-    }
-    ];
-
-    const task_name = $('input#odm_task_name').val();
-    content = {
-        "name": task_name,
-        "partial": true
-//        "options": options
-    }
-    console.log(content)
-    $.ajax({
-        type: 'POST',
-        url: `/api/odm/${odmconfig_id}/projects/${odmproject_id}/tasks/`,
-        data: JSON.stringify(content),
-        contentType: "application/json",
-        dataType: 'json',
-        // Submit parent form on success.
-        success: function(data) {
-            console.log(data);
-            // refresh project list
-            get_odm_tasks();
-            $('#newOdmTask').modal('hide');
-            flashMessage([{"type": "success", "message": "New ODM task created"}]);
-
-        },
-        // Enable save button again.
-        error: function() { flashMessage([{"type": "danger", "message": "Not able to create ODM task"}]) }
-    });
-}
-
 function commit_odm_task() {
     // Commit odm task so that it is processed
     document.getElementById('odm_download').disabled = true
