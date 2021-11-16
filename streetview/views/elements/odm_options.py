@@ -53,7 +53,9 @@ def get_options_fields(options, sort=False):
             elif opt["domain"] == "positive integer":
                 kwargs["validators"] = opt_validators + [validators.NumberRange(min=0)]
             else:
-                raise ValueError(f"Found unexpected domain '{opt['domain']} in option {opt['name']}'")
+                # disregard any option ranges
+                kwargs["validators"] = opt_validators
+                # raise ValueError(f"Found unexpected domain '{opt['domain']} in option {opt['name']}'")
             kwargs["default"] = int(value)
         elif opt["type"] == "float":
             field = fields.FloatField
