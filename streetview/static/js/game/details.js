@@ -5,11 +5,11 @@ const id = $('input#game_id').val();
 var buildUrl = `/static/mesh/${id}`;
 var jsUrl = `/static/unityFramework`;
 console.log(buildUrl);
-var loaderUrl = jsUrl + "/unity.loader.js";
+var loaderUrl = buildUrl + "/unity.loader.js";
 var config = {
     dataUrl: buildUrl + "/unity.data",
-    frameworkUrl: jsUrl + "/unity.framework.js",
-    codeUrl: jsUrl + "/unity.wasm",
+    frameworkUrl: buildUrl + "/unity.framework.js",
+    codeUrl: buildUrl + "/unity.wasm",
     streamingAssetsUrl: "StreamingAssets",
     companyName: "Rainbow Sensing",
     productName: "Mesh Raider WebGL",

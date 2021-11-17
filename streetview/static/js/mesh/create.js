@@ -294,3 +294,73 @@ function delete_odm_project() {
         });
     }
 }
+
+// map related jQuery
+var map = new L.map('map').setView({lon: 0, lat: 0}, 2);
+var maxAutoZoom = 15;
+var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 18,
+    attribution: '&copy; <a href="https://openstreetmap.org/copyright" target="_blank">OpenStreetMap contributors</a> ',
+    tileSize: 256,
+});
+var googleSat = L.tileLayer('http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+    maxZoom: 20,
+    subdomains:['mt0','mt1','mt2','mt3']
+});
+var googleTer = L.tileLayer('http://{s}.google.com/vt/lyrs=p&x={x}&y={y}&z={z}', {
+    maxZoom: 20,
+    subdomains:['mt0','mt1','mt2','mt3']
+});
+var baseMaps = {
+    "OpenStreetMap": osmLayer,
+    "Google Satellite": googleSat,
+    "Google Terrain": googleTer
+
+}
+L.control.layers(baseMaps).addTo(map);
+osmLayer.addTo(map);
+// add a scale at at your map.
+var scale = L.control.scale().addTo(map);
+
+// retrieve longitude and latitude form fields
+pos_lng = document.getElementById('longitude');
+pos_lat = document.getElementById('latitude');
+// define change behaviour of form fields
+pos_lat.onchange = function(){
+    position = marker.getLatLng();
+    changeMarker(pos_lat.value, position.lng);
+};
+pos_lng.onchange = function(){
+    console.log("Changing longitude")
+    position = marker.getLatLng();
+    changeMarker(position.lat, pos_lng.value);
+};
+
+// Add a marker for the user to pick a location on the map
+marker = new L.marker([pos_lng.value, pos_lat.value], {draggable: "true"});
+// update the marker so that it sets everything in the same way
+marker.addTo(map);
+
+// change marker location by clicking (separate function)
+map.on("click", function (e) {
+    document.getElementById('latitude').value = e.latlng.lat;
+    document.getElementById('longitude').value = e.latlng.lng;
+    changeMarker(e.latlng.lat, e.latlng.lng);
+});
+
+// change marker location by dragging (both clicking and dragging is possible)
+marker.on('dragend', function(e){
+    var drag = e.target;
+    var position = drag.getLatLng();
+    console.log(position);
+    changeMarker(position.lat, position.lng);
+});
+
+// set location of marker in map, as well as coordinates in form upon any change
+function changeMarker(lat, lng){
+    var newLatLng = new L.LatLng(lat, lng);
+    marker.setLatLng(newLatLng, {draggable: "true"}).bindPopup(newLatLng).update();
+    console.log("Setting new coordinates in form")
+    document.getElementById('latitude').value = lat;
+    document.getElementById('longitude').value = lng;
+}

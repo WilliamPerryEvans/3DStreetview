@@ -1,4 +1,5 @@
 import os
+import shutil
 from sqlalchemy import Integer, ForeignKey, String, Column, event
 from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.orm import relationship
@@ -38,4 +39,17 @@ def receive_after_update(mapper, connection, target):
         if not(os.path.isfile(zipfile)):
             raise IOError(f"File {zipfile} does not exist")
         unzipmesh(zipfile, trg_path=trg_path, mesh_name="unity")
+        # after unzipping, throw away the .zip file
+        os.remove(zipfile)
 
+@event.listens_for(Game, "after_delete")
+def receive_after_update(mapper, connection, target):
+    """
+    event listener, to be executed when a Game is deleted
+    Also delete the associated folder coontaining the unity game files
+
+    """
+    trg_path = f"streetview/static/mesh/{target.id}"
+    if os.path.isdir(trg_path):
+        # remove entire folder
+        shutil.rmtree(trg_path)

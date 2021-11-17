@@ -1,5 +1,24 @@
 {% extends 'admin/model/create.html' %}
+{% block head %}
+    {{ super() }}
+    <head>
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+       integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+       crossorigin=""/>
+    </head>
+{% endblock %}
+
 {% block body %}
+<div class="row">
+    <div class="col">
+        <div class="container">
+            <h2>Mesh projects</h2><span>Mesh projects let you organize surveys with OpenDataKit Collect, via a configured ODK Central server. Once configured, you can get a QR code for surveyors to load the survey into their smart phone. In a Mesh project, you can then track the status of the survey, bulk transfer photos from the survey to a pre-configured WebOpenDroneMap server and create meshes. You can also transfer the meshes into a game environment.<br> Below, create a new mesh project with associated ODK and ODM projects, check the details with QR code, transfer files from ODK to ODM, run ODM, and transfer results to a Game project.</span></div>
+    </div>
+    <div class="col">
+        <div class="container" style="height: 400px;width:inherit;"><div id="map" style="width:inherit;"></div></div>
+    </div>
+</div>
+
   {% block create_form %}
     {% call lib.form_tag(action=None) %}
 
@@ -125,6 +144,9 @@
 
 {% endblock %}
 {% block tail %}
-  {{ super() }}
-  <script src="{{ url_for('static', filename='js/mesh/create.js') }}"></script>
+    {{ super() }}
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+        integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin="">
+    </script>
+    <script src="{{ url_for('static', filename='js/mesh/create.js') }}"></script>
 {% endblock %}
