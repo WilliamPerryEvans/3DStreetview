@@ -128,11 +128,11 @@ class MeshView(UserModelView):
     edit_template = "mesh/edit.html"
     odk2odm_template = "mesh/odk2odm.html"
 
-    def validate_form(self, form):
-        if is_form_submitted():
-            # do something
-            print("Y'ello")
-        return super(MeshView, self).validate_form(form)
+    # def validate_form(self, form):
+    #     if is_form_submitted():
+    #         # do something
+    #         print("Y'ello")
+    #     return super(MeshView, self).validate_form(form)
 
     @expose("/odk2odm", methods=("GET", "POST"))
     def odk2odm(self):

@@ -260,11 +260,12 @@ function commit_odm_task() {
     if ( task_data.status == 50 || task_data.status == 40 || task_data.status == 30 ) {
         // reset task to zero by patching the restart_from
         data = {
-            "can_rerun_from": [],
-            "status": null
+            "options": [{
+                "name": "rerun-from",
+                "value": "dataset"
+            }]
         }
         url_patch = `/api/odm/${odmconfig_id}/projects/${odmproject_id}/tasks/${task_id}/`
-        // TODO: fix patch to enable restart at the start of a job
         $.ajax({
             type: 'PATCH',
             url: url_patch,
