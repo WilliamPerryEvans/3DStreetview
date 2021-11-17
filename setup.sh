@@ -251,7 +251,8 @@ EOF
     sudo certbot --nginx -n --agree-tos --redirect -m $email -d $domain_name -d www.$domain_name
 
     # setup firewall rules
-    echo 'Add Nginx HTTPS to firewall rules'
+    echo 'Add Nginx HTTP/HTTPS to firewall rules'
+    sudo ufw allow 'Nginx HTTP'
     sudo ufw allow 'Nginx HTTPS'
 
 

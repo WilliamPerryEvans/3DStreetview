@@ -164,16 +164,17 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form role="form">
-                        <div class="form-group">
-                            <label for="odm_task_name" class="control-label">Name</label>
-                            <input class="form-control" id="odm_task_name" name="odm_task_name" required="" type="text" value="">
-                        </div>
+                    <form id="new_odm_task" method="POST" action="" role="form">
+                        {{ lib.render_form_fields(form.task_form) }}
+                        {{ lib.render_form_buttons(return_url, is_modal=True) }}
+                        <br>
+                        If you want to change any default options for WebODM processing, please change options below before hitting Save
+                        <hr>
+                        {{ lib.render_form_fields(form.options_form, tooltip=True) }}
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                            <button type="button" onclick="create_odm_task()" class="btn btn-primary save">Create task</button>
                         </div>
                     </form>
+
                 </div>
             </div>
         </div>

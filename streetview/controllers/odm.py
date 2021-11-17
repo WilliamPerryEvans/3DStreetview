@@ -167,6 +167,24 @@ def get_thumbnail(id, project_id, task_id, filename):
     except:
         return f"Page {odm.url} does not exist", 404
 
+@odm_api.route("/api/odm/<id>/processingnodes/options/", methods=["GET"])
+@login_required
+def get_options(id):
+    """
+    Get the available list of processing options from the selected odm configuration
+    :param id: odm configuration id
+    :return: http response
+    """
+    odm = get_odm(id)
+    if not(isinstance(odm, Odm)):
+        return odm
+    try:
+        res = odm_requests.get_options(odm.url, odm.token)
+        return jsonify(res.json())
+    except:
+        return f"Page {odm.url} does not exist", 404
+
+
 
 @odm_api.route("/api/odm/<id>/projects/", methods=["POST"])
 @login_required

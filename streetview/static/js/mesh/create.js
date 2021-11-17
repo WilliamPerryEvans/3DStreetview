@@ -169,6 +169,9 @@ function save_odk_project() {
 }
 
 $('form.admin-form').submit(function( event ) {
+    // disable submit buttons, to prevent a user clicking twice
+    flashMessage([{"type": "warning", "message": "Please wait while your mesh project is being generated..."}])
+    $('button[type=submit], input[type=submit]').prop('disabled', true);
     // Prevent submit.
     // store form in separate constant
     const form = this;
@@ -218,7 +221,7 @@ $('form.admin-form').submit(function( event ) {
         // Enable save button again.
         error: function() {
             flashMessage([{"type": "danger", "message": "Not able to register ODM project locally"}])
-            $('button[type=submit], input[type=submit]').prop('disabled',false);
+            $('button[type=submit], input[type=submit]').prop('disabled', false);
         }
     });
 });

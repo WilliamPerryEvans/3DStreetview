@@ -5,11 +5,15 @@ from flask_admin.babel import gettext
 from flask_admin.model.template import EndpointLinkRowAction
 from flask_admin.helpers import get_redirect_target
 from flask_admin.model.helpers import get_mdict_item_or_list
-from wtforms.fields import HiddenField, MultipleFileField, SubmitField
+from flask_admin.helpers import is_form_submitted, validate_form_on_submit
+from werkzeug.datastructures import ImmutableMultiDict
+from wtforms import fields
 from streetview.views.general import UserModelView
 from streetview.models.mesh import Mesh
 from streetview.models.odm import Odm
 from streetview.models.odk import Odk
+from odk2odm import odm_requests
+from streetview.views.elements import odm_options
 
 class MeshView(UserModelView):
     def render(self, template, **kwargs):
@@ -107,8 +111,8 @@ class MeshView(UserModelView):
     # column_descriptions = {
     # }
     form_extra_fields = {
-        "odmproject_id": HiddenField("odmproject_id"),
-        "odkproject_id": HiddenField("odkproject_id"),
+        "odmproject_id": fields.HiddenField("odmproject_id"),
+        "odkproject_id": fields.HiddenField("odkproject_id"),
         # "zipfile": form.FileUploadField("Mesh zipfile", base_path="mesh", allowed_extensions=["zip"]),
     }
 
@@ -124,12 +128,19 @@ class MeshView(UserModelView):
     edit_template = "mesh/edit.html"
     odk2odm_template = "mesh/odk2odm.html"
 
+    # def validate_form(self, form):
+    #     if is_form_submitted():
+    #         # do something
+    #         print("Y'ello")
+    #     return super(MeshView, self).validate_form(form)
+
     @expose("/odk2odm", methods=("GET", "POST"))
     def odk2odm(self):
         """
         A special odk2odm template, that performs the task of transferring files from ODK to ODM
         The template also allows for transfer of local photos to the same ODM tasks.
         """
+
         return_url = get_redirect_target() or self.get_url('.index_view')
 
         # odk2odm behaves the same as details
@@ -141,23 +152,51 @@ class MeshView(UserModelView):
         if id is None:
             return redirect(return_url)
         model = self.get_one(id)
-
         if model is None:
             flash(gettext('Record does not exist.'), 'error')
             return redirect(return_url)
+        # establish a special form for odm options
+        # retrieve latest ODM settings available
+        odm_config = model.odmproject.odm
+        options = odm_requests.get_options(odm_config.url, odm_config.token).json()
+        default_options = odm_options.parse_default_options(options)
+        options_fields = odm_options.get_options_fields(options, sort="name")
+        # monkey patch OdmOptionsForm using the most current API based nodeODM settings available
+
+        for k, v in options_fields.items():
+            setattr(odm_options.OdmOptionsForm, k, v)
+        form = odm_options.OdmForm()
         if request.method == "POST":
-            # POST occurs when a user wants to upload local files to ODM server
-            task_id = request.form["id"]
-            if task_id:
-                for f in request.files.getlist("file"):
-                    print(f"Uploading file {f}")
-                    # rewind to start of file
-                    f.stream.seek(0)
-                    fields = {"images": (f.filename, f.stream, "images/jpg")}
-                    res = model.odmproject.upload_file(task_id=request.form["id"], fields=fields)
-            else:
-                res = "No ODM task selected yet", 403
-            return res # redirect(return_url)
+            # POST occurs when a user wants to upload local files to ODM server, or wants to make a new ODM task
+            if "id" in request.form:
+                # a photo upload is submitted
+                task_id = request.form["id"]
+                if task_id:
+                    for f in request.files.getlist("file"):
+                        print(f"Uploading file {f}")
+                        # rewind to start of file
+                        f.stream.seek(0)
+                        files = {"images": (f.filename, f.stream, "images/jpg")}
+                        res = model.odmproject.upload_file(task_id=request.form["id"], fields=files)
+                else:
+                    res = "No ODM task selected yet", 403
+                return res # redirect(return_url)
+            elif "task_form-name" in request.form:
+                # A ODM task form is submitted
+                if form.options_form.validate(form) and form.task_form.validate(form):
+                    project_id = model.odmproject.remote_id
+                    odm = model.odmproject.odm
+                    # setup request data
+                    data = {
+                        "name": form.task_form["name"].data,
+                        "partial": True,
+                        "options": odm_options.parse_options(form.options_form, default_options=default_options)
+                    }
+                    res = odm_requests.post_task(odm.url, odm.token, project_id, data=data)
+                    flash(f"New task with id {res.json()['id']} created")
+
+                else:
+                    flash("ODM task form is invalid, please rectify the errors", "error")
 
         template = self.odk2odm_template
         return self.render(
@@ -166,6 +205,7 @@ class MeshView(UserModelView):
             details_columns=self._details_columns,
             get_value=self.get_detail_value,
             return_url=return_url,
+            form=form,
         )
     def get_action_form(self):
         """
@@ -174,8 +214,8 @@ class MeshView(UserModelView):
         :return: form
         """
         form = super(UserModelView, self).get_action_form()
-        form.files = MultipleFileField('Select local Image(s)')
-        form.upload = SubmitField("Upload")
+        form.files = fields.MultipleFileField('Select local Image(s)')
+        form.upload = fields.SubmitField("Upload")
         return form
 
     def get_query(self):

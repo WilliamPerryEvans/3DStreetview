@@ -8,6 +8,7 @@ Flask-Security
 flask_httpauth
 alembic
 jsonschema
+numpy
 psycopg2
 python-dotenv
 SQLAlchemy-serializer
