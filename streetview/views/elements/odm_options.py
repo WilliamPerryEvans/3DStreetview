@@ -74,14 +74,39 @@ def get_options_fields(options, sort=False):
         opt_f[opt["name"]] = field(**kwargs)
     return opt_f
 
-def parse_options(form):
+def parse_options(form, default_options={}):
     """
     Converts dict with key values to list of dicts with "name" and "value" key-value pairs, needed to post options in task
     If the dict contains a csrf-token then that will be left out
     :param options: dict with k, v pairs ODM options
     :return: list with dicts with "name" and "value"
     """
-    return [{"name": f.label.text, "value": f.data} for f in form if (f.label.text != "CSRF Token" and f.data != f.default)]
+    return [{"name": f.label.text, "value": f.data} for f in form if f.label.text != "CSRF Token" if f.data != default_options[f.label.text]]
+
+def parse_default_options(options):
+    """
+    Parses options returned from nodeODM via API into a dictionary with default values
+    :param options: list of options from API call
+    :return: dict with k, v as opt["name"] and opt["value"] as input, where the value is converted to the right type
+    """
+    default_options = {}
+    for opt in options:
+        k = opt["name"]
+        if opt["type"] == "bool":
+            if opt["value"].lower() == "false":
+                v = False
+            else:
+                v = True
+        elif opt["type"] == "int":
+            v = int(opt["value"])
+        elif opt["type"] == "float":
+            v = float(opt["value"])
+        else:
+            # strings or enums
+            v = opt["value"]
+        default_options[k] = v
+    return default_options
+
 
 class OdmOptionsForm(FlaskForm):
     """

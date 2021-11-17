@@ -159,6 +159,7 @@ class MeshView(UserModelView):
         # retrieve latest ODM settings available
         odm_config = model.odmproject.odm
         options = odm_requests.get_options(odm_config.url, odm_config.token).json()
+        default_options = odm_options.parse_default_options(options)
         options_fields = odm_options.get_options_fields(options, sort="name")
         # monkey patch OdmOptionsForm using the most current API based nodeODM settings available
 
@@ -189,7 +190,7 @@ class MeshView(UserModelView):
                     data = {
                         "name": form.task_form["name"].data,
                         "partial": True,
-                        "options": odm_options.parse_options(form.options_form)
+                        "options": odm_options.parse_options(form.options_form, default_options=default_options)
                     }
                     res = odm_requests.post_task(odm.url, odm.token, project_id, data=data)
                     flash(f"New task with id {res.json()['id']} created")
