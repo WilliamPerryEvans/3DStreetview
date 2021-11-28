@@ -23,8 +23,8 @@ Or, if you prefer a more open-source method, simply go to [OpenStreetMap](https:
  
 ![OSM Address 2](https://user-images.githubusercontent.com/36959983/143770876-d0bafd05-3f12-407a-9dab-a1817cbb5499.png)
 
-- Latitude: 38.027260
-- Longitude: -78.457611
+- Latitude: 38.03536
+- Longitude: -78.50355
 - Mesh name: The Lawn Test (for example)
 
 Now under ODK project selection you will have to select the server you are using. I don’t know which server you are using, but put in the correct URL! For instance: crankyserver.com
