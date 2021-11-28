@@ -19,6 +19,8 @@ We have 2 servers. ODK is receieving images from the mobile phone, the other is 
 
 For 3D meshes, you need two activities. The first one is collecting and gathering images, which that can be done in two options. The first option is using ODK Central, where it connects to mobile phones. The second option, is to upload images from any source (drone, camera, etc.) directly to the platform to ODM (but it is going through 
 
+After you set up you will get the message 'Record was successfully created.'
+
 1. Go to https://3dstreetview.org/dashboard/ 
 
 2. Sign in or get an account if you do not have one already by clicking ‘Guest’ in the top right corner and then register for an account
@@ -29,6 +31,8 @@ For 3D meshes, you need two activities. The first one is collecting and gatherin
 If you do not have the coordinates ready, you can go on Google Maps or OpenStreetMap to get them. For example, go to the exact location you want on Google Maps and then simply left click, you should then have the latitude and longitude appear at the pin you created. 
   
 Or, if you prefer a more open-source method, simply go to [OpenStreetMap](https://osm.org/), zoom to the exact spot you want to collect your coordinates, right click and press 'show address' - it will appear on the screen for you to record. 
+
+** Or, once this is fixed, you can zoom on the web map in the upper right hand corner and once you have arrived at your area of interest you can select create mesh'**
  
 ![OSM Address 2](https://user-images.githubusercontent.com/36959983/143770876-d0bafd05-3f12-407a-9dab-a1817cbb5499.png)
 
