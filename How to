@@ -1,0 +1,14 @@
+# How to use the 3D Streeview Dashboard
+
+Step 1 – go to https://3dstreetview.org/dashboard/ 
+Step 2 – sign in or get an account if you do not have one already by clicking ‘Guest’ in the top right corner and then register for an account
+Step 3 – Now, on the left panel you should see an option called ‘Mesh projects’, click this
+Step 4 – To create a new mesh, select the ‘create’ tab and proceed to fill out the necessary information.
+If you do not have the coordinates ready, you can go on Google Maps or OpenStreetMap to get them. For example, go to the exact location you want on Google Maps and then simply left click, you should then have the latitude and longitude appear at the pin you created.
+Latitude: 38.027260
+Longitude: -78.457611
+Mesh name: Riverview Cemetery Test (for example)
+Now under ODK project selection you will have to select the server you are using. I don’t know which server you are using, but put in the correct URL! For instance: crankyserver.com
+And again, under ODM project selection you need to select a server. For instance: https://3dphotocollect.org/
+
+Then do some stuff under Project and hit ‘save’
