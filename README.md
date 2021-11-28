@@ -8,7 +8,16 @@ As an example, let's say you want to create a 3D mesh of [The Lawn](https://en.w
 
 ![lawn_aerial_overhead_fall_ss_01](https://user-images.githubusercontent.com/36959983/143770486-180c75f9-da02-4d96-8d15-8b51e5af534f.jpg)
 
-Here is an aerial image showing the area of interest—note the large building at the far right known as the Rotunda, this is the area we will focus on. To capture this, **or any other <u>environment**, follow these steps:
+Here is an aerial image showing the area of interest—note the large building at the far right known as the Rotunda, this is the area we will focus on. To capture this, **or any other environment**, follow these steps:
+  
+  
+## Before that...Server Configuration!
+  
+After getting an account, the next thing you want to do is configure your server. For now, someone can use ODK Central, or upload the pictures directly. 
+
+We have 2 servers. ODK is receieving images from the mobile phone, the other is ODM, where the processing is being done. Ok this is not a server, it is a'processing server'. Also, the platform can take pictures directly, uploaded manually.  
+
+For 3D meshes, you need two activities. The first one is collecting and gathering images, which that can be done in two options. The first option is using ODK Central, where it connects to mobile phones. The second option, is to upload images from any source (drone, camera, etc.) directly to the platform to ODM (but it is going through 
 
 1. Go to https://3dstreetview.org/dashboard/ 
 
