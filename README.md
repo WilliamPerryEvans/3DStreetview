@@ -68,8 +68,8 @@ Congratulations, your project is set up 🥳! Now you are ready for the hard par
 9.	Back to the dashboard, press some buttons. 
 
 ### And here is what you come away with
-For this example, I only took a limited number of photos (211) so the mesh has plenty of holes. 
 [UVA Lawn Mesh](https://user-images.githubusercontent.com/36959983/161445319-b29f5846-1469-4caf-b8c8-6e10b7165c83.mp4)
+For this example, I only took a limited number of photos (211) so the mesh has plenty of holes. 
 
 #### Below is another example of a (low-res) recent output from [Mohammad Maisha](https://github.com/maisha26) in Stone Town, Zanzibar ⬇
 [Old Fort 3D](https://user-images.githubusercontent.com/36959983/143775448-4020138e-62c3-4520-bbcc-b9da5b38e3cf.mp4)
